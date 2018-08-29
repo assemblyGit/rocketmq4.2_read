@@ -26,7 +26,7 @@ import org.apache.rocketmq.filter.util.BloomFilterData;
 
 import java.util.Collections;
 
-/**
+/**    <p>consumer的filter data</p>
  * Filter data of consumer.
  */
 public class ConsumerFilterData {

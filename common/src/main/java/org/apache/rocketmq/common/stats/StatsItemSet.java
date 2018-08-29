@@ -25,7 +25,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.apache.rocketmq.common.UtilAll;
 import org.slf4j.Logger;
-
+/**分析项目集合*/
 public class StatsItemSet {
     private final ConcurrentMap<String/* key */, StatsItem> statsItemTable =
         new ConcurrentHashMap<String, StatsItem>(128);
@@ -103,7 +103,7 @@ public class StatsItemSet {
             }
         }, Math.abs(UtilAll.computNextMorningTimeMillis() - System.currentTimeMillis()), 1000 * 60 * 60 * 24, TimeUnit.MILLISECONDS);
     }
-
+    /**每10秒采样*/
     private void samplingInSeconds() {
         Iterator<Entry<String, StatsItem>> it = this.statsItemTable.entrySet().iterator();
         while (it.hasNext()) {
@@ -151,7 +151,7 @@ public class StatsItemSet {
             next.getValue().printAtDay();
         }
     }
-
+    /**增加值*/
     public void addValue(final String statsKey, final int incValue, final int incTimes) {
         StatsItem statsItem = this.getAndCreateStatsItem(statsKey);
         statsItem.getValue().addAndGet(incValue);

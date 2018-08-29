@@ -57,7 +57,7 @@ public class BrokerFastFailure {
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                if (brokerController.getBrokerConfig().isBrokerFastFailureEnable()) {
+                if (brokerController.getBrokerConfig().isBrokerFastFailureEnable()) {//快速失败
                     cleanExpiredRequest();
                 }
             }
@@ -68,7 +68,7 @@ public class BrokerFastFailure {
         while (this.brokerController.getMessageStore().isOSPageCacheBusy()) {
             try {
                 if (!this.brokerController.getSendThreadPoolQueue().isEmpty()) {
-                    final Runnable runnable = this.brokerController.getSendThreadPoolQueue().poll(0, TimeUnit.SECONDS);
+                    final Runnable runnable = this.brokerController.getSendThreadPoolQueue().poll(0, TimeUnit.SECONDS);//拉去所有
                     if (null == runnable) {
                         break;
                     }

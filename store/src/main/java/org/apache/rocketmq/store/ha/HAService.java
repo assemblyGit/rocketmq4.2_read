@@ -52,7 +52,7 @@ public class HAService {
     private final DefaultMessageStore defaultMessageStore;
 
     private final WaitNotifyObject waitNotifyObject = new WaitNotifyObject();
-    private final AtomicLong push2SlaveMaxOffset = new AtomicLong(0);
+    private final AtomicLong push2SlaveMaxOffset = new AtomicLong(0);//push到slave的最大偏移
 
     private final GroupTransferService groupTransferService;
 
@@ -65,7 +65,7 @@ public class HAService {
         this.groupTransferService = new GroupTransferService();
         this.haClient = new HAClient();
     }
-
+    /***/
     public void updateMasterAddress(final String newAddr) {
         if (this.haClient != null) {
             this.haClient.updateMasterAddress(newAddr);
@@ -77,11 +77,11 @@ public class HAService {
     }
 
     public boolean isSlaveOK(final long masterPutWhere) {
-        boolean result = this.connectionCount.get() > 0;
+        boolean result = this.connectionCount.get() > 0;//存在slave
         result =
             result
                 && ((masterPutWhere - this.push2SlaveMaxOffset.get()) < this.defaultMessageStore
-                .getMessageStoreConfig().getHaSlaveFallbehindMax());
+                .getMessageStoreConfig().getHaSlaveFallbehindMax());//master slave之间的偏差不是很大
         return result;
     }
 
@@ -111,7 +111,7 @@ public class HAService {
         this.groupTransferService.start();
         this.haClient.start();
     }
-
+    /**添加连接*/
     public void addConnection(final HAConnection conn) {
         synchronized (this.connectionList) {
             this.connectionList.add(conn);
@@ -247,7 +247,7 @@ public class HAService {
         }
     }
 
-    /**
+    /**    <p>主从如果是同步阻塞实现</p>
      * GroupTransferService Service
      */
     class GroupTransferService extends ServiceThread {
@@ -258,7 +258,7 @@ public class HAService {
 
         public synchronized void putRequest(final CommitLog.GroupCommitRequest request) {
             synchronized (this.requestsWrite) {
-                this.requestsWrite.add(request);
+                this.requestsWrite.add(request);//写请求
             }
             if (hasNotified.compareAndSet(false, true)) {
                 waitPoint.countDown(); // notify
@@ -280,12 +280,12 @@ public class HAService {
                 if (!this.requestsRead.isEmpty()) {
                     for (CommitLog.GroupCommitRequest req : this.requestsRead) {
                         boolean transferOK = HAService.this.push2SlaveMaxOffset.get() >= req.getNextOffset();
-                        for (int i = 0; !transferOK && i < 5; i++) {
+                        for (int i = 0; !transferOK && i < 5; i++) {//所有Slave中已成功复制的最大偏移量是否大于等于消息生产者发送消息后消息服务端返回下一条消息的起始偏移量，如果是则表示主从同步复制已经完成
                             this.notifyTransferObject.waitForRunning(1000);
                             transferOK = HAService.this.push2SlaveMaxOffset.get() >= req.getNextOffset();
                         }
 
-                        if (!transferOK) {
+                        if (!transferOK) {//传输到slave超时
                             log.warn("transfer messsage to slave timeout, " + req.getNextOffset());
                         }
 
@@ -356,7 +356,7 @@ public class HAService {
 
             return needHeart;
         }
-
+       /**报告maxoffset*/
         private boolean reportSlaveMaxOffset(final long maxOffset) {
             this.reportOffset.position(0);
             this.reportOffset.limit(8);
@@ -378,8 +378,8 @@ public class HAService {
         }
 
         private void reallocateByteBuffer() {
-            int remain = READ_MAX_BUFFER_SIZE - this.dispatchPostion;
-            if (remain > 0) {
+            int remain = READ_MAX_BUFFER_SIZE - this.dispatchPostion;//dispatchPostion 表示完整处理消息的偏移,
+            if (remain > 0) {//如果>0 表明buffer中有部分未完整的消息内容
                 this.byteBufferRead.position(this.dispatchPostion);
 
                 this.byteBufferBackup.position(0);
@@ -387,9 +387,9 @@ public class HAService {
                 this.byteBufferBackup.put(this.byteBufferRead);
             }
 
-            this.swapByteBuffer();
+            this.swapByteBuffer();//交换
 
-            this.byteBufferRead.position(remain);
+            this.byteBufferRead.position(remain);//
             this.byteBufferRead.limit(READ_MAX_BUFFER_SIZE);
             this.dispatchPostion = 0;
         }
@@ -404,16 +404,16 @@ public class HAService {
             int readSizeZeroTimes = 0;
             while (this.byteBufferRead.hasRemaining()) {
                 try {
-                    int readSize = this.socketChannel.read(this.byteBufferRead);
+                    int readSize = this.socketChannel.read(this.byteBufferRead);//读取内容
                     if (readSize > 0) {
                         lastWriteTimestamp = HAService.this.defaultMessageStore.getSystemClock().now();
                         readSizeZeroTimes = 0;
-                        boolean result = this.dispatchReadRequest();
+                        boolean result = this.dispatchReadRequest();//分配读到request
                         if (!result) {
                             log.error("HAClient, dispatchReadRequest error");
                             return false;
                         }
-                    } else if (readSize == 0) {
+                    } else if (readSize == 0) {//读到0个的次数
                         if (++readSizeZeroTimes >= 3) {
                             break;
                         }
@@ -431,16 +431,16 @@ public class HAService {
         }
 
         private boolean dispatchReadRequest() {
-            final int msgHeaderSize = 8 + 4; // phyoffset + size
+            final int msgHeaderSize = 8 + 4; // phyoffset + size    物理偏移+大小
             int readSocketPos = this.byteBufferRead.position();
 
             while (true) {
                 int diff = this.byteBufferRead.position() - this.dispatchPostion;
-                if (diff >= msgHeaderSize) {
+                if (diff >= msgHeaderSize) {//如果大于header的长度
                     long masterPhyOffset = this.byteBufferRead.getLong(this.dispatchPostion);
-                    int bodySize = this.byteBufferRead.getInt(this.dispatchPostion + 8);
+                    int bodySize = this.byteBufferRead.getInt(this.dispatchPostion + 8);//4字节的长度
 
-                    long slavePhyOffset = HAService.this.defaultMessageStore.getMaxPhyOffset();
+                    long slavePhyOffset = HAService.this.defaultMessageStore.getMaxPhyOffset();//slave的偏移量
 
                     if (slavePhyOffset != 0) {
                         if (slavePhyOffset != masterPhyOffset) {
@@ -450,7 +450,7 @@ public class HAService {
                         }
                     }
 
-                    if (diff >= (msgHeaderSize + bodySize)) {
+                    if (diff >= (msgHeaderSize + bodySize)) {//如果没有body 表明可能是心跳包
                         byte[] bodyData = new byte[bodySize];
                         this.byteBufferRead.position(this.dispatchPostion + msgHeaderSize);
                         this.byteBufferRead.get(bodyData);
@@ -468,20 +468,20 @@ public class HAService {
                     }
                 }
 
-                if (!this.byteBufferRead.hasRemaining()) {
+                if (!this.byteBufferRead.hasRemaining()) {//没有剩余空间
                     this.reallocateByteBuffer();
                 }
 
                 break;
             }
 
-            return true;
+            return true;//默认处理成功
         }
 
         private boolean reportSlaveMaxOffsetPlus() {
             boolean result = true;
             long currentPhyOffset = HAService.this.defaultMessageStore.getMaxPhyOffset();
-            if (currentPhyOffset > this.currentReportedOffset) {
+            if (currentPhyOffset > this.currentReportedOffset) {//如果当前offset更新
                 this.currentReportedOffset = currentPhyOffset;
                 result = this.reportSlaveMaxOffset(this.currentReportedOffset);
                 if (!result) {
@@ -507,7 +507,7 @@ public class HAService {
                     }
                 }
 
-                this.currentReportedOffset = HAService.this.defaultMessageStore.getMaxPhyOffset();
+                this.currentReportedOffset = HAService.this.defaultMessageStore.getMaxPhyOffset();//获取当前偏移
 
                 this.lastWriteTimestamp = System.currentTimeMillis();
             }
@@ -548,10 +548,10 @@ public class HAService {
 
             while (!this.isStopped()) {
                 try {
-                    if (this.connectMaster()) {
+                    if (this.connectMaster()) {//连接到master
 
                         if (this.isTimeToReportOffset()) {
-                            boolean result = this.reportSlaveMaxOffset(this.currentReportedOffset);
+                            boolean result = this.reportSlaveMaxOffset(this.currentReportedOffset);//报告给master
                             if (!result) {
                                 this.closeMaster();
                             }

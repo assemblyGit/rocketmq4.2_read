@@ -79,21 +79,21 @@ public class ClientManageProcessor implements NettyRequestProcessor {
             heartbeatData.getClientID(),
             request.getLanguage(),
             request.getVersion()
-        );
+        );//
 
-        for (ConsumerData data : heartbeatData.getConsumerDataSet()) {
+        for (ConsumerData data : heartbeatData.getConsumerDataSet()) {//消费者data set
             SubscriptionGroupConfig subscriptionGroupConfig =
                 this.brokerController.getSubscriptionGroupManager().findSubscriptionGroupConfig(
-                    data.getGroupName());
+                    data.getGroupName());//获取订阅组的信息
             boolean isNotifyConsumerIdsChangedEnable = true;
-            if (null != subscriptionGroupConfig) {
-                isNotifyConsumerIdsChangedEnable = subscriptionGroupConfig.isNotifyConsumerIdsChangedEnable();
+            if (null != subscriptionGroupConfig) {//如果存在
+                isNotifyConsumerIdsChangedEnable = subscriptionGroupConfig.isNotifyConsumerIdsChangedEnable();//如果consumerid 变更启用发送通知
                 int topicSysFlag = 0;
-                if (data.isUnitMode()) {
+                if (data.isUnitMode()) {//如果是unitmode
                     topicSysFlag = TopicSysFlag.buildSysFlag(false, true);
                 }
-                String newTopic = MixAll.getRetryTopic(data.getGroupName());
-                this.brokerController.getTopicConfigManager().createTopicInSendMessageBackMethod(
+                String newTopic = MixAll.getRetryTopic(data.getGroupName());//重试话题
+                this.brokerController.getTopicConfigManager().createTopicInSendMessageBackMethod(//创建重试话题
                     newTopic,
                     subscriptionGroupConfig.getRetryQueueNums(),
                     PermName.PERM_WRITE | PermName.PERM_READ, topicSysFlag);
@@ -107,7 +107,7 @@ public class ClientManageProcessor implements NettyRequestProcessor {
                 data.getConsumeFromWhere(),
                 data.getSubscriptionDataSet(),
                 isNotifyConsumerIdsChangedEnable
-            );
+            );//注册消费者
 
             if (changed) {
                 log.info("registerConsumer info changed {} {}",

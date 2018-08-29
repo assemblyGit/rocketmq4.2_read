@@ -31,7 +31,7 @@ public class TransactionProducer {
         producer.setCheckThreadPoolMinSize(2);
         producer.setCheckThreadPoolMaxSize(2);
         producer.setCheckRequestHoldMax(2000);
-        producer.setTransactionCheckListener(transactionCheckListener);
+        producer.setTransactionCheckListener(transactionCheckListener);//事务回掉
         producer.start();
 
         String[] tags = new String[] {"TagA", "TagB", "TagC", "TagD", "TagE"};

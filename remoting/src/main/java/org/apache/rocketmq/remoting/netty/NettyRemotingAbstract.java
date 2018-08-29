@@ -73,7 +73,7 @@ public abstract class NettyRemotingAbstract {
     protected final ConcurrentMap<Integer /* opaque */, ResponseFuture> responseTable =
         new ConcurrentHashMap<Integer, ResponseFuture>(256);
 
-    /**
+    /**     <p>该容器持有request code 的处理器</p>
      * This container holds all processors per request code, aka, for each incoming request, we may look up the
      * responding processor in this map to handle the request.
      */
@@ -98,8 +98,8 @@ public abstract class NettyRemotingAbstract {
     /**
      * Constructor, specifying capacity of one-way and asynchronous semaphores.
      *
-     * @param permitsOneway Number of permits for one-way requests.
-     * @param permitsAsync Number of permits for asynchronous requests.
+     * @param permitsOneway Number of permits for one-way requests.    one-way request的数量
+     * @param permitsAsync Number of permits for asynchronous requests.    异步request的数量
      */
     public NettyRemotingAbstract(final int permitsOneway, final int permitsAsync) {
         this.semaphoreOneway = new Semaphore(permitsOneway, true);
@@ -142,7 +142,7 @@ public abstract class NettyRemotingAbstract {
         final RemotingCommand cmd = msg;
         if (cmd != null) {
             switch (cmd.getType()) {
-                case REQUEST_COMMAND:
+                case REQUEST_COMMAND://如果是请求
                     processRequestCommand(ctx, cmd);
                     break;
                 case RESPONSE_COMMAND:
@@ -154,7 +154,7 @@ public abstract class NettyRemotingAbstract {
         }
     }
 
-    /**
+    /**    <p>处理</p>
      * Process incoming request command issued by remote peer.
      *
      * @param ctx channel handler context.
@@ -245,7 +245,7 @@ public abstract class NettyRemotingAbstract {
         }
     }
 
-    /**
+    /**     <p>处理远程对等体返回的响应到之前的request</p>
      * Process response from remote peer to the previous issued requests.
      *
      * @param ctx channel handler context.
@@ -255,14 +255,14 @@ public abstract class NettyRemotingAbstract {
         final int opaque = cmd.getOpaque();
         final ResponseFuture responseFuture = responseTable.get(opaque);
         if (responseFuture != null) {
-            responseFuture.setResponseCommand(cmd);
+            responseFuture.setResponseCommand(cmd);//设置远程命令
 
             responseTable.remove(opaque);
 
-            if (responseFuture.getInvokeCallback() != null) {
+            if (responseFuture.getInvokeCallback() != null) {//存在回掉
                 executeInvokeCallback(responseFuture);
             } else {
-                responseFuture.putResponse(cmd);
+                responseFuture.putResponse(cmd);//不存在回掉
                 responseFuture.release();
             }
         } else {
@@ -271,7 +271,7 @@ public abstract class NettyRemotingAbstract {
         }
     }
 
-    /**
+    /**    <p>在回掉执行器中执行回掉</p>
      * Execute callback in callback executor. If callback executor is null, run directly in current thread
      */
     private void executeInvokeCallback(final ResponseFuture responseFuture) {
@@ -281,13 +281,13 @@ public abstract class NettyRemotingAbstract {
             try {
                 executor.submit(new Runnable() {
                     @Override
-                    public void run() {
+                    public void run() {//回掉执行器
                         try {
                             responseFuture.executeInvokeCallback();
                         } catch (Throwable e) {
                             log.warn("execute callback in executor exception, and callback throw", e);
                         } finally {
-                            responseFuture.release();
+                            responseFuture.release();//释放准入
                         }
                     }
                 });
@@ -380,7 +380,7 @@ public abstract class NettyRemotingAbstract {
                 }
             });
 
-            RemotingCommand responseCommand = responseFuture.waitResponse(timeoutMillis);
+            RemotingCommand responseCommand = responseFuture.waitResponse(timeoutMillis);//等待响应
             if (null == responseCommand) {
                 if (responseFuture.isSendRequestOK()) {
                     throw new RemotingTimeoutException(RemotingHelper.parseSocketAddressAddr(addr), timeoutMillis,
@@ -395,26 +395,26 @@ public abstract class NettyRemotingAbstract {
             this.responseTable.remove(opaque);
         }
     }
-
+    /**异步调用channel*/
     public void invokeAsyncImpl(final Channel channel, final RemotingCommand request, final long timeoutMillis,
         final InvokeCallback invokeCallback)
         throws InterruptedException, RemotingTooMuchRequestException, RemotingTimeoutException, RemotingSendRequestException {
         final int opaque = request.getOpaque();
         boolean acquired = this.semaphoreAsync.tryAcquire(timeoutMillis, TimeUnit.MILLISECONDS);
-        if (acquired) {
-            final SemaphoreReleaseOnlyOnce once = new SemaphoreReleaseOnlyOnce(this.semaphoreAsync);
+        if (acquired) {//控制同时访问的数量
+            final SemaphoreReleaseOnlyOnce once = new SemaphoreReleaseOnlyOnce(this.semaphoreAsync);//只释放一次的信号量
 
-            final ResponseFuture responseFuture = new ResponseFuture(opaque, timeoutMillis, invokeCallback, once);
+            final ResponseFuture responseFuture = new ResponseFuture(opaque, timeoutMillis, invokeCallback, once);//异步调用
             this.responseTable.put(opaque, responseFuture);
             try {
                 channel.writeAndFlush(request).addListener(new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture f) throws Exception {
-                        if (f.isSuccess()) {
+                        if (f.isSuccess()) {//发送成功
                             responseFuture.setSendRequestOK(true);
                             return;
-                        } else {
-                            responseFuture.setSendRequestOK(false);
+                        } else {//如果发送失败
+                            responseFuture.setSendRequestOK(false);//写入request不ok
                         }
 
                         responseFuture.putResponse(null);

@@ -20,7 +20,7 @@ import java.util.List;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
-
+/**消费消息服务*/
 public interface ConsumeMessageService {
     void start();
 

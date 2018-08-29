@@ -151,7 +151,7 @@ import org.apache.rocketmq.remoting.protocol.LanguageCode;
 import org.apache.rocketmq.remoting.protocol.RemotingCommand;
 import org.apache.rocketmq.remoting.protocol.RemotingSerializable;
 import org.slf4j.Logger;
-
+/**mq客户端Api实现*/
 public class MQClientAPIImpl {
 
     private final static Logger log = ClientLogger.getLog();
@@ -172,11 +172,11 @@ public class MQClientAPIImpl {
         final ClientRemotingProcessor clientRemotingProcessor,
         RPCHook rpcHook, final ClientConfig clientConfig) {
         this.clientConfig = clientConfig;
-        topAddressing = new TopAddressing(MixAll.getWSAddr(), clientConfig.getUnitName());
+        topAddressing = new TopAddressing(MixAll.getWSAddr(), clientConfig.getUnitName());//单元名
         this.remotingClient = new NettyRemotingClient(nettyClientConfig, null);
         this.clientRemotingProcessor = clientRemotingProcessor;
 
-        this.remotingClient.registerRPCHook(rpcHook);
+        this.remotingClient.registerRPCHook(rpcHook);//rpc回掉
         this.remotingClient.registerProcessor(RequestCode.CHECK_TRANSACTION_STATE, this.clientRemotingProcessor, null);
 
         this.remotingClient.registerProcessor(RequestCode.NOTIFY_CONSUMER_IDS_CHANGED, this.clientRemotingProcessor, null);
@@ -200,7 +200,7 @@ public class MQClientAPIImpl {
 
     public String fetchNameServerAddr() {
         try {
-            String addrs = this.topAddressing.fetchNSAddr();
+            String addrs = this.topAddressing.fetchNSAddr();//fetchNsAddr
             if (addrs != null) {
                 if (!addrs.equals(this.nameSrvAddr)) {
                     log.info("name server address changed, old=" + this.nameSrvAddr + ", new=" + addrs);
@@ -284,7 +284,7 @@ public class MQClientAPIImpl {
 
         throw new MQClientException(response.getCode(), response.getRemark());
     }
-
+    /**调用send,不存在参数默认为空*/
     public SendResult sendMessage(
         final String addr,
         final String brokerName,
@@ -297,7 +297,7 @@ public class MQClientAPIImpl {
     ) throws RemotingException, MQBrokerException, InterruptedException {
         return sendMessage(addr, brokerName, msg, requestHeader, timeoutMillis, communicationMode, null, null, null, 0, context, producer);
     }
-
+    /***/
     public SendResult sendMessage(
         final String addr,
         final String brokerName,
@@ -305,7 +305,7 @@ public class MQClientAPIImpl {
         final SendMessageRequestHeader requestHeader,
         final long timeoutMillis,
         final CommunicationMode communicationMode,
-        final SendCallback sendCallback,
+        final SendCallback sendCallback,//回掉
         final TopicPublishInfo topicPublishInfo,
         final MQClientInstance instance,
         final int retryTimesWhenSendFailed,
@@ -313,14 +313,14 @@ public class MQClientAPIImpl {
         final DefaultMQProducerImpl producer
     ) throws RemotingException, MQBrokerException, InterruptedException {
         RemotingCommand request = null;
-        if (sendSmartMsg || msg instanceof MessageBatch) {
+        if (sendSmartMsg || msg instanceof MessageBatch) {//如果批量发生
             SendMessageRequestHeaderV2 requestHeaderV2 = SendMessageRequestHeaderV2.createSendMessageRequestHeaderV2(requestHeader);
             request = RemotingCommand.createRequestCommand(msg instanceof MessageBatch ? RequestCode.SEND_BATCH_MESSAGE : RequestCode.SEND_MESSAGE_V2, requestHeaderV2);
         } else {
             request = RemotingCommand.createRequestCommand(RequestCode.SEND_MESSAGE, requestHeader);
         }
 
-        request.setBody(msg.getBody());
+        request.setBody(msg.getBody());//发送内容
 
         switch (communicationMode) {
             case ONEWAY:
@@ -352,7 +352,7 @@ public class MQClientAPIImpl {
         assert response != null;
         return this.processSendResponse(brokerName, msg, response);
     }
-
+    /**异步发送消息*/
     private void sendMessageAsync(
         final String addr,
         final String brokerName,
@@ -374,7 +374,7 @@ public class MQClientAPIImpl {
                 if (null == sendCallback && response != null) {
 
                     try {
-                        SendResult sendResult = MQClientAPIImpl.this.processSendResponse(brokerName, msg, response);
+                        SendResult sendResult = MQClientAPIImpl.this.processSendResponse(brokerName, msg, response);//如果回掉为空
                         if (context != null && sendResult != null) {
                             context.setSendResult(sendResult);
                             context.getProducer().executeSendMessageHookAfter(context);
@@ -426,7 +426,7 @@ public class MQClientAPIImpl {
             }
         });
     }
-
+    /**异步调用出现异常,重试*/
     private void onExceptionImpl(final String brokerName,
         final Message msg,
         final long timeoutMillis,
@@ -591,7 +591,7 @@ public class MQClientAPIImpl {
                     try {
                         PullResult pullResult = MQClientAPIImpl.this.processPullResponse(response);
                         assert pullResult != null;
-                        pullCallback.onSuccess(pullResult);
+                        pullCallback.onSuccess(pullResult);//回掉
                     } catch (Exception e) {
                         pullCallback.onException(e);
                     }
@@ -1196,7 +1196,7 @@ public class MQClientAPIImpl {
 
         return getTopicRouteInfoFromNameServer(topic, timeoutMillis, true);
     }
-
+    /***/
     public TopicRouteData getTopicRouteInfoFromNameServer(final String topic, final long timeoutMillis,
         boolean allowTopicNotExist) throws MQClientException, InterruptedException, RemotingTimeoutException, RemotingSendRequestException, RemotingConnectException {
         GetRouteInfoRequestHeader requestHeader = new GetRouteInfoRequestHeader();
@@ -1204,7 +1204,7 @@ public class MQClientAPIImpl {
 
         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_ROUTEINTO_BY_TOPIC, requestHeader);
 
-        RemotingCommand response = this.remotingClient.invokeSync(null, request, timeoutMillis);
+        RemotingCommand response = this.remotingClient.invokeSync(null, request, timeoutMillis);//同步调用
         assert response != null;
         switch (response.getCode()) {
             case ResponseCode.TOPIC_NOT_EXIST: {
@@ -1217,7 +1217,7 @@ public class MQClientAPIImpl {
             case ResponseCode.SUCCESS: {
                 byte[] body = response.getBody();
                 if (body != null) {
-                    return TopicRouteData.decode(body, TopicRouteData.class);
+                    return TopicRouteData.decode(body, TopicRouteData.class);//json
                 }
             }
             default:

@@ -112,9 +112,9 @@ public class EndTransactionProcessor implements NettyRequestProcessor {
             }
         }
 
-        final MessageExt msgExt = this.brokerController.getMessageStore().lookMessageByOffset(requestHeader.getCommitLogOffset());
+        final MessageExt msgExt = this.brokerController.getMessageStore().lookMessageByOffset(requestHeader.getCommitLogOffset());//
         if (msgExt != null) {
-            final String pgroupRead = msgExt.getProperty(MessageConst.PROPERTY_PRODUCER_GROUP);
+            final String pgroupRead = msgExt.getProperty(MessageConst.PROPERTY_PRODUCER_GROUP);//生产者group
             if (!pgroupRead.equals(requestHeader.getProducerGroup())) {
                 response.setCode(ResponseCode.SYSTEM_ERROR);
                 response.setRemark("the producer group wrong");
@@ -134,17 +134,17 @@ public class EndTransactionProcessor implements NettyRequestProcessor {
             }
 
             MessageExtBrokerInner msgInner = this.endMessageTransaction(msgExt);
-            msgInner.setSysFlag(MessageSysFlag.resetTransactionValue(msgInner.getSysFlag(), requestHeader.getCommitOrRollback()));
+            msgInner.setSysFlag(MessageSysFlag.resetTransactionValue(msgInner.getSysFlag(), requestHeader.getCommitOrRollback()));//设置为事务属性
 
             msgInner.setQueueOffset(requestHeader.getTranStateTableOffset());
             msgInner.setPreparedTransactionOffset(requestHeader.getCommitLogOffset());
             msgInner.setStoreTimestamp(msgExt.getStoreTimestamp());
-            if (MessageSysFlag.TRANSACTION_ROLLBACK_TYPE == requestHeader.getCommitOrRollback()) {
+            if (MessageSysFlag.TRANSACTION_ROLLBACK_TYPE == requestHeader.getCommitOrRollback()) {//如果是回滚,设置body为空
                 msgInner.setBody(null);
             }
 
             final MessageStore messageStore = this.brokerController.getMessageStore();
-            final PutMessageResult putMessageResult = messageStore.putMessage(msgInner);
+            final PutMessageResult putMessageResult = messageStore.putMessage(msgInner);//提交消息
             if (putMessageResult != null) {
                 switch (putMessageResult.getPutMessageStatus()) {
                     // Success

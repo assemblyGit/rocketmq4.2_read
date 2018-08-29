@@ -31,7 +31,7 @@ import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.rocketmq.common.protocol.heartbeat.SubscriptionData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+/**消费者组信息*/
 public class ConsumerGroupInfo {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
     private final String groupName;
@@ -112,7 +112,7 @@ public class ConsumerGroupInfo {
 
         return false;
     }
-
+    /**更新channel,如果新增返回true*/
     public boolean updateChannel(final ClientChannelInfo infoNew, ConsumeType consumeType,
         MessageModel messageModel, ConsumeFromWhere consumeFromWhere) {
         boolean updated = false;
@@ -131,7 +131,7 @@ public class ConsumerGroupInfo {
 
             infoOld = infoNew;
         } else {
-            if (!infoOld.getClientId().equals(infoNew.getClientId())) {
+            if (!infoOld.getClientId().equals(infoNew.getClientId())) {//如果cliend id 发生变更
                 log.error("[BUG] consumer channel exist in broker, but clientId not equal. GROUP: {} OLD: {} NEW: {} ",
                     this.groupName,
                     infoOld.toString(),
@@ -145,11 +145,11 @@ public class ConsumerGroupInfo {
 
         return updated;
     }
-
+    /**更新消费者组的数据*/
     public boolean updateSubscription(final Set<SubscriptionData> subList) {
         boolean updated = false;
 
-        for (SubscriptionData sub : subList) {
+        for (SubscriptionData sub : subList) {//遍历所有订阅
             SubscriptionData old = this.subscriptionTable.get(sub.getTopic());
             if (old == null) {
                 SubscriptionData prev = this.subscriptionTable.putIfAbsent(sub.getTopic(), sub);
@@ -159,7 +159,7 @@ public class ConsumerGroupInfo {
                         this.groupName,
                         sub.toString());
                 }
-            } else if (sub.getSubVersion() > old.getSubVersion()) {
+            } else if (sub.getSubVersion() > old.getSubVersion()) {//版本更新
                 if (this.consumeType == ConsumeType.CONSUME_PASSIVELY) {
                     log.info("subscription changed, group: {} OLD: {} NEW: {}",
                         this.groupName,
@@ -185,7 +185,7 @@ public class ConsumerGroupInfo {
                 }
             }
 
-            if (!exist) {
+            if (!exist) {//删除不存在的
                 log.warn("subscription changed, group: {} remove topic {} {}",
                     this.groupName,
                     oldTopic,

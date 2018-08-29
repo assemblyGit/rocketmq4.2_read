@@ -31,7 +31,7 @@ import org.apache.rocketmq.store.config.BrokerRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
+/**    <p>创建MappedFile</p>
  * Create MappedFile in advance
  */
 public class AllocateMappedFileService extends ServiceThread {
@@ -47,7 +47,7 @@ public class AllocateMappedFileService extends ServiceThread {
     public AllocateMappedFileService(DefaultMessageStore messageStore) {
         this.messageStore = messageStore;
     }
-
+    /***/
     public MappedFile putRequestAndReturnMappedFile(String nextFilePath, String nextNextFilePath, int fileSize) {
         int canSubmitRequests = 2;
         if (this.messageStore.getMessageStoreConfig().isTransientStorePoolEnable()) {

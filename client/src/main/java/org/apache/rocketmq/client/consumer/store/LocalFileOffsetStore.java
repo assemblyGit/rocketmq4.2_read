@@ -55,7 +55,7 @@ public class LocalFileOffsetStore implements OffsetStore {
         this.storePath = LOCAL_OFFSET_STORE_DIR + File.separator +
             this.mQClientFactory.getClientId() + File.separator +
             this.groupName + File.separator +
-            "offsets.json";
+            "offsets.json";//偏移json
     }
 
     @Override

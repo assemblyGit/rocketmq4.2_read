@@ -55,7 +55,7 @@ public class ScheduleMessageService extends ConfigManager {
         new ConcurrentHashMap<Integer, Long>(32);
 
     private final ConcurrentMap<Integer /* level */, Long/* offset */> offsetTable =
-        new ConcurrentHashMap<Integer, Long>(32);
+        new ConcurrentHashMap<Integer, Long>(32);//延迟级别对应的消息逻辑偏移
 
     private final Timer timer = new Timer("ScheduleMessageTimerThread", true);
 
@@ -89,7 +89,7 @@ public class ScheduleMessageService extends ConfigManager {
     }
 
     private void updateOffset(int delayLevel, long offset) {
-        this.offsetTable.put(delayLevel, offset);
+        this.offsetTable.put(delayLevel, offset);//更新延迟级别的偏移
     }
 
     public long computeDeliverTimestamp(final int delayLevel, final long storeTimestamp) {
@@ -111,8 +111,8 @@ public class ScheduleMessageService extends ConfigManager {
                 offset = 0L;
             }
 
-            if (timeDelay != null) {
-                this.timer.schedule(new DeliverDelayedMessageTimerTask(level, offset), FIRST_DELAY_TIME);
+            if (timeDelay != null) {//延迟消息
+                this.timer.schedule(new DeliverDelayedMessageTimerTask(level, offset), FIRST_DELAY_TIME);//每个级别的一个延迟任务
             }
         }
 
@@ -177,7 +177,7 @@ public class ScheduleMessageService extends ConfigManager {
         timeUnitTable.put("h", 1000L * 60 * 60);
         timeUnitTable.put("d", 1000L * 60 * 60 * 24);
 
-        String levelString = this.defaultMessageStore.getMessageStoreConfig().getMessageDelayLevel();
+        String levelString = this.defaultMessageStore.getMessageStoreConfig().getMessageDelayLevel();//消息延迟级别
         try {
             String[] levelArray = levelString.split(" ");
             for (int i = 0; i < levelArray.length; i++) {
@@ -191,7 +191,7 @@ public class ScheduleMessageService extends ConfigManager {
                 }
                 long num = Long.parseLong(value.substring(0, value.length() - 1));
                 long delayTimeMillis = tu * num;
-                this.delayLevelTable.put(level, delayTimeMillis);
+                this.delayLevelTable.put(level, delayTimeMillis);//对应级别的延迟
             }
         } catch (Exception e) {
             log.error("parseDelayLevel exception", e);
@@ -241,7 +241,7 @@ public class ScheduleMessageService extends ConfigManager {
         public void executeOnTimeup() {
             ConsumeQueue cq =
                 ScheduleMessageService.this.defaultMessageStore.findConsumeQueue(SCHEDULE_TOPIC,
-                    delayLevel2QueueId(delayLevel));
+                    delayLevel2QueueId(delayLevel));//延迟级别对应的调度队列
 
             long failScheduleOffset = offset;
 
@@ -283,10 +283,10 @@ public class ScheduleMessageService extends ConfigManager {
 
                                 if (msgExt != null) {
                                     try {
-                                        MessageExtBrokerInner msgInner = this.messageTimeup(msgExt);
+                                        MessageExtBrokerInner msgInner = this.messageTimeup(msgExt);//修正属性,重新写回队列
                                         PutMessageResult putMessageResult =
                                             ScheduleMessageService.this.defaultMessageStore
-                                                .putMessage(msgInner);
+                                                .putMessage(msgInner);//写会队列
 
                                         if (putMessageResult != null
                                             && putMessageResult.getPutMessageStatus() == PutMessageStatus.PUT_OK) {
@@ -319,7 +319,7 @@ public class ScheduleMessageService extends ConfigManager {
                             } else {
                                 ScheduleMessageService.this.timer.schedule(
                                     new DeliverDelayedMessageTimerTask(this.delayLevel, nextOffset),
-                                    countdown);
+                                    countdown);//过多久后调用
                                 ScheduleMessageService.this.updateOffset(this.delayLevel, nextOffset);
                                 return;
                             }
@@ -349,7 +349,7 @@ public class ScheduleMessageService extends ConfigManager {
             ScheduleMessageService.this.timer.schedule(new DeliverDelayedMessageTimerTask(this.delayLevel,
                 failScheduleOffset), DELAY_FOR_A_WHILE);
         }
-
+        /**修正消息的属性*/
         private MessageExtBrokerInner messageTimeup(MessageExt msgExt) {
             MessageExtBrokerInner msgInner = new MessageExtBrokerInner();
             msgInner.setBody(msgExt.getBody());
@@ -366,12 +366,12 @@ public class ScheduleMessageService extends ConfigManager {
             msgInner.setBornTimestamp(msgExt.getBornTimestamp());
             msgInner.setBornHost(msgExt.getBornHost());
             msgInner.setStoreHost(msgExt.getStoreHost());
-            msgInner.setReconsumeTimes(msgExt.getReconsumeTimes());
+            msgInner.setReconsumeTimes(msgExt.getReconsumeTimes());//重试次数
 
             msgInner.setWaitStoreMsgOK(false);
             MessageAccessor.clearProperty(msgInner, MessageConst.PROPERTY_DELAY_TIME_LEVEL);
 
-            msgInner.setTopic(msgInner.getProperty(MessageConst.PROPERTY_REAL_TOPIC));
+            msgInner.setTopic(msgInner.getProperty(MessageConst.PROPERTY_REAL_TOPIC));//真正的话题
 
             String queueIdStr = msgInner.getProperty(MessageConst.PROPERTY_REAL_QUEUE_ID);
             int queueId = Integer.parseInt(queueIdStr);

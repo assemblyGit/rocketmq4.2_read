@@ -25,7 +25,7 @@ public class DispatchRequest {
     private final int msgSize;
     private final long tagsCode;
     private final long storeTimestamp;
-    private final long consumeQueueOffset;
+    private final long consumeQueueOffset;//
     private final String keys;
     private final boolean success;
     private final String uniqKey;

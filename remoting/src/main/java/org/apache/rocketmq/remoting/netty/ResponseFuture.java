@@ -30,7 +30,7 @@ public class ResponseFuture {
     private final long beginTimestamp = System.currentTimeMillis();
     private final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-    private final SemaphoreReleaseOnlyOnce once;
+    private final SemaphoreReleaseOnlyOnce once;//用来只是否一次,准许下一次远程调用
 
     private final AtomicBoolean executeCallbackOnlyOnce = new AtomicBoolean(false);
     private volatile RemotingCommand responseCommand;
@@ -52,8 +52,8 @@ public class ResponseFuture {
             }
         }
     }
-
-    public void release() {
+    /**控制同时访问的数量*/
+    public void release() {//释放信号量
         if (this.once != null) {
             this.once.release();
         }

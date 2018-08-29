@@ -33,7 +33,7 @@ public class RebalanceLockManager {
         "rocketmq.broker.rebalance.lockMaxLiveTime", "60000"));
     private final Lock lock = new ReentrantLock();
     private final ConcurrentMap<String/* group */, ConcurrentHashMap<MessageQueue, LockEntry>> mqLockTable =
-        new ConcurrentHashMap<String, ConcurrentHashMap<MessageQueue, LockEntry>>(1024);
+        new ConcurrentHashMap<String, ConcurrentHashMap<MessageQueue, LockEntry>>(1024);//锁定记录
 
     public boolean tryLock(final String group, final MessageQueue mq, final String clientId) {
 
@@ -58,7 +58,7 @@ public class RebalanceLockManager {
                             mq);
                     }
 
-                    if (lockEntry.isLocked(clientId)) {
+                    if (lockEntry.isLocked(clientId)) {//如果已经被该客户端锁定
                         lockEntry.setLastUpdateTimestamp(System.currentTimeMillis());
                         return true;
                     }
@@ -120,7 +120,7 @@ public class RebalanceLockManager {
         Set<MessageQueue> notLockedMqs = new HashSet<MessageQueue>(mqs.size());
 
         for (MessageQueue mq : mqs) {
-            if (this.isLocked(group, mq, clientId)) {
+            if (this.isLocked(group, mq, clientId)) {//如果已经锁定
                 lockedMqs.add(mq);
             } else {
                 notLockedMqs.add(mq);
@@ -131,13 +131,13 @@ public class RebalanceLockManager {
             try {
                 this.lock.lockInterruptibly();
                 try {
-                    ConcurrentHashMap<MessageQueue, LockEntry> groupValue = this.mqLockTable.get(group);
+                    ConcurrentHashMap<MessageQueue, LockEntry> groupValue = this.mqLockTable.get(group);//group对消息的锁定
                     if (null == groupValue) {
                         groupValue = new ConcurrentHashMap<>(32);
                         this.mqLockTable.put(group, groupValue);
                     }
 
-                    for (MessageQueue mq : notLockedMqs) {
+                    for (MessageQueue mq : notLockedMqs) {//每个mq对应的锁住实体
                         LockEntry lockEntry = groupValue.get(mq);
                         if (null == lockEntry) {
                             lockEntry = new LockEntry();
@@ -150,15 +150,15 @@ public class RebalanceLockManager {
                                 mq);
                         }
 
-                        if (lockEntry.isLocked(clientId)) {
+                        if (lockEntry.isLocked(clientId)) {//还有锁定超时的可能
                             lockEntry.setLastUpdateTimestamp(System.currentTimeMillis());
                             lockedMqs.add(mq);
                             continue;
                         }
 
-                        String oldClientId = lockEntry.getClientId();
+                        String oldClientId = lockEntry.getClientId();//竞争条件
 
-                        if (lockEntry.isExpired()) {
+                        if (lockEntry.isExpired()) {//如果是锁定超时,则进行锁定
                             lockEntry.setClientId(clientId);
                             lockEntry.setLastUpdateTimestamp(System.currentTimeMillis());
                             log.warn(
@@ -230,7 +230,7 @@ public class RebalanceLockManager {
             log.error("putMessage exception", e);
         }
     }
-
+    /**group 对应的锁定实体*/
     static class LockEntry {
         private String clientId;
         private volatile long lastUpdateTimestamp = System.currentTimeMillis();

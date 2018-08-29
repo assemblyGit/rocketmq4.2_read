@@ -67,7 +67,7 @@ public class FilterServerManager {
     public void createFilterServer() {
         int more =
             this.brokerController.getBrokerConfig().getFilterServerNums() - this.filterServerTable.size();
-        String cmd = this.buildStartCommand();
+        String cmd = this.buildStartCommand();//构建启动命令
         for (int i = 0; i < more; i++) {
             FilterServerUtil.callShell(cmd, log);
         }

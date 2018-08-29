@@ -49,7 +49,7 @@ public class ExpressionMessageFilter implements MessageFilter {
             bloomDataValid = false;
             return;
         }
-        BloomFilter bloomFilter = this.consumerFilterManager.getBloomFilter();
+        BloomFilter bloomFilter = this.consumerFilterManager.getBloomFilter();//布隆表达式
         if (bloomFilter != null && bloomFilter.isValid(consumerFilterData.getBloomFilterData())) {
             bloomDataValid = true;
         } else {
@@ -68,7 +68,7 @@ public class ExpressionMessageFilter implements MessageFilter {
         }
 
         // by tags code.
-        if (ExpressionType.isTagType(subscriptionData.getExpressionType())) {
+        if (ExpressionType.isTagType(subscriptionData.getExpressionType())) {//如果是tag类型
 
             if (tagsCode == null) {
                 return true;
@@ -78,7 +78,7 @@ public class ExpressionMessageFilter implements MessageFilter {
                 return true;
             }
 
-            return subscriptionData.getCodeSet().contains(tagsCode.intValue());
+            return subscriptionData.getCodeSet().contains(tagsCode.intValue());//如果在tag集合中
         } else {
             // no expression or no bloom
             if (consumerFilterData == null || consumerFilterData.getExpression() == null
@@ -124,7 +124,7 @@ public class ExpressionMessageFilter implements MessageFilter {
             return true;
         }
 
-        if (ExpressionType.isTagType(subscriptionData.getExpressionType())) {
+        if (ExpressionType.isTagType(subscriptionData.getExpressionType())) {//如果是tag匹配
             return true;
         }
 

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 package org.apache.rocketmq.remoting.netty;
-
+/**netty client 配置*/
 public class NettyClientConfig {
     /**
      * Worker thread number

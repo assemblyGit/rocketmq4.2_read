@@ -32,7 +32,7 @@ public interface OffsetStore {
      */
     void load() throws MQClientException;
 
-    /**
+    /**    <p>更新offset,在memory中存储</p>
      * Update the offset,store it in memory
      */
     void updateOffset(final MessageQueue mq, final long offset, final boolean increaseOnly);

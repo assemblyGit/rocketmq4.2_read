@@ -20,17 +20,17 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 
 public interface MessageFilter {
-    /**
+    /**    <p>通过tag 或者 消息被接收时的bit map</p>
      * match by tags code or filter bit map which is calculated when message received
      * and stored in consume queue ext.
      *
      * @param tagsCode tagsCode
-     * @param cqExtUnit extend unit of consume queue
+     * @param cqExtUnit extend unit of consume queue consume queue的扩展单元
      */
     boolean isMatchedByConsumeQueue(final Long tagsCode,
         final ConsumeQueueExt.CqExtUnit cqExtUnit);
 
-    /**
+    /**    <p>匹配存储在commit log中的消息内容</p>
      * match by message content which are stored in commit log.
      * <br>{@code msgBuffer} and {@code properties} are not all null.If invoked in store,
      * {@code properties} is null;If invoked in {@code PullRequestHoldService}, {@code msgBuffer} is null.

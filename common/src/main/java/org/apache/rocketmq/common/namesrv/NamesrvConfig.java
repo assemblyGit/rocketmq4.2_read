@@ -79,7 +79,7 @@ public class NamesrvConfig {
     public String getConfigStorePath() {
         return configStorePath;
     }
-
+    /**配置存储路径*/
     public void setConfigStorePath(final String configStorePath) {
         this.configStorePath = configStorePath;
     }

@@ -108,7 +108,7 @@ public class DefaultRequestProcessor implements NettyRequestProcessor {
         response.setRemark(null);
         return response;
     }
-
+    /**pull message forward*/
     private RemotingCommand pullMessageForward(final ChannelHandlerContext ctx,
         final RemotingCommand request) throws Exception {
         final RemotingCommand response = RemotingCommand.createResponseCommand(PullMessageResponseHeader.class);

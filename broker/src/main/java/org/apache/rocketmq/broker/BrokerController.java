@@ -162,7 +162,7 @@ public class BrokerController {
         this.brokerOuterAPI = new BrokerOuterAPI(nettyClientConfig);
         this.filterServerManager = new FilterServerManager(this);
 
-        this.slaveSynchronize = new SlaveSynchronize(this);
+        this.slaveSynchronize = new SlaveSynchronize(this);//主从同步
 
         this.sendThreadPoolQueue = new LinkedBlockingQueue<Runnable>(this.brokerConfig.getSendThreadPoolQueueCapacity());
         this.pullThreadPoolQueue = new LinkedBlockingQueue<Runnable>(this.brokerConfig.getPullThreadPoolQueueCapacity());
@@ -226,7 +226,7 @@ public class BrokerController {
             this.remotingServer = new NettyRemotingServer(this.nettyServerConfig, this.clientHousekeepingService);
             NettyServerConfig fastConfig = (NettyServerConfig) this.nettyServerConfig.clone();
             fastConfig.setListenPort(nettyServerConfig.getListenPort() - 2);
-            this.fastRemotingServer = new NettyRemotingServer(fastConfig, this.clientHousekeepingService);
+            this.fastRemotingServer = new NettyRemotingServer(fastConfig, this.clientHousekeepingService);//vip通道
             this.sendMessageExecutor = new BrokerFixedThreadPoolExecutor(
                 this.brokerConfig.getSendMessageThreadPoolNums(),
                 this.brokerConfig.getSendMessageThreadPoolNums(),
@@ -286,7 +286,7 @@ public class BrokerController {
                 @Override
                 public void run() {
                     try {
-                        BrokerController.this.consumerOffsetManager.persist();
+                        BrokerController.this.consumerOffsetManager.persist();//持久化消费者偏移
                     } catch (Throwable e) {
                         log.error("schedule persist consumerOffset error.", e);
                     }
@@ -338,10 +338,10 @@ public class BrokerController {
                 }
             }, 1000 * 10, 1000 * 60, TimeUnit.MILLISECONDS);
 
-            if (this.brokerConfig.getNamesrvAddr() != null) {
+            if (this.brokerConfig.getNamesrvAddr() != null) {//更新namesrv
                 this.brokerOuterAPI.updateNameServerAddressList(this.brokerConfig.getNamesrvAddr());
                 log.info("Set user specified name server address: {}", this.brokerConfig.getNamesrvAddr());
-            } else if (this.brokerConfig.isFetchNamesrvAddrByAddressServer()) {
+            } else if (this.brokerConfig.isFetchNamesrvAddrByAddressServer()) {//如果通过address server 查找name srv
                 this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
                     @Override
@@ -355,7 +355,7 @@ public class BrokerController {
                 }, 1000 * 10, 1000 * 60 * 2, TimeUnit.MILLISECONDS);
             }
 
-            if (BrokerRole.SLAVE == this.messageStoreConfig.getBrokerRole()) {
+            if (BrokerRole.SLAVE == this.messageStoreConfig.getBrokerRole()) {//如果是slave
                 if (this.messageStoreConfig.getHaMasterAddress() != null && this.messageStoreConfig.getHaMasterAddress().length() >= 6) {
                     this.messageStore.updateHaMasterAddress(this.messageStoreConfig.getHaMasterAddress());
                     this.updateMasterHAServerAddrPeriodically = false;
@@ -471,7 +471,7 @@ public class BrokerController {
     }
 
     public void protectBroker() {
-        if (this.brokerConfig.isDisableConsumeIfConsumerReadSlowly()) {
+        if (this.brokerConfig.isDisableConsumeIfConsumerReadSlowly()) {//如果消费者消费过慢 ,禁止消费者
             final Iterator<Map.Entry<String, MomentStatsItem>> it = this.brokerStatsManager.getMomentStatsItemSetFallSize().getStatsItemTable().entrySet().iterator();
             while (it.hasNext()) {
                 final Map.Entry<String, MomentStatsItem> next = it.next();
@@ -491,7 +491,7 @@ public class BrokerController {
         final Runnable peek = q.peek();
         if (peek != null) {
             RequestTask rt = BrokerFastFailure.castRunnable(peek);
-            slowTimeMills = rt == null ? 0 : this.messageStore.now() - rt.getCreateTimestamp();
+            slowTimeMills = rt == null ? 0 : this.messageStore.now() - rt.getCreateTimestamp();//创建时间
         }
 
         if (slowTimeMills < 0)
@@ -718,7 +718,7 @@ public class BrokerController {
 
         RegisterBrokerResult registerBrokerResult = this.brokerOuterAPI.registerBrokerAll(
             this.brokerConfig.getBrokerClusterName(),
-            this.getBrokerAddr(),
+            this.getBrokerAddr(),//broker地址
             this.brokerConfig.getBrokerName(),
             this.brokerConfig.getBrokerId(),
             this.getHAServerAddr(),
@@ -727,12 +727,12 @@ public class BrokerController {
             oneway,
             this.brokerConfig.getRegisterBrokerTimeoutMills());
 
-        if (registerBrokerResult != null) {
+        if (registerBrokerResult != null) {//注册broker结果
             if (this.updateMasterHAServerAddrPeriodically && registerBrokerResult.getHaServerAddr() != null) {
                 this.messageStore.updateHaMasterAddress(registerBrokerResult.getHaServerAddr());
             }
 
-            this.slaveSynchronize.setMasterAddr(registerBrokerResult.getMasterAddr());
+            this.slaveSynchronize.setMasterAddr(registerBrokerResult.getMasterAddr());//设置master
 
             if (checkOrderConfig) {
                 this.getTopicConfigManager().updateOrderTopicConfig(registerBrokerResult.getKvTable());

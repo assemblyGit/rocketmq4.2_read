@@ -16,7 +16,7 @@
  */
 
 package org.apache.rocketmq.common.filter;
-
+/**表达式类型*/
 public class ExpressionType {
 
     /**
@@ -57,7 +57,7 @@ public class ExpressionType {
      * If null or * expression,meaning subscribe all.
      */
     public static final String TAG = "TAG";
-
+    /**NULL 或者 TAG都为 TAG*/
     public static boolean isTagType(String type) {
         if (type == null || TAG.equals(type)) {
             return true;

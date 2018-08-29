@@ -68,7 +68,7 @@ public class BloomFilter {
         // f = (1 - p)^k = e^(kln(1-p))
         // when p = 0.5, k = ln2 * (m/n), f = (1/2)^k = (0.618)^(m/n)
         double errorRate = f / 100.0;
-        this.k = (int) Math.ceil(logMN(0.5, errorRate));
+        this.k = (int) Math.ceil(logMN(0.5, errorRate));    //hash函数
 
         if (this.k < 1) {
             throw new IllegalArgumentException("Hash function num is less than 1, maybe you should change the value of error rate or bit num!");

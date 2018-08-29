@@ -37,7 +37,7 @@ import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.apache.rocketmq.remoting.netty.NettyRemotingClient;
 
-/**
+/**    <p>这个class 是应用发送消息的入口点</p>
  * This class is the entry point for applications intending to send messages.
  * </p>
  *
@@ -73,7 +73,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
      */
     private String producerGroup;
 
-    /**
+    /**    <p>用于测试或者样例程序</p>
      * Just for testing or demo program
      */
     private String createTopicKey = MixAll.DEFAULT_TOPIC;
@@ -126,7 +126,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
         this(MixAll.DEFAULT_PRODUCER_GROUP, null);
     }
 
-    /**
+    /**    <p>使用producer group和RPC hook 构建</p>
      * Constructor specifying both producer group and RPC hook.
      *
      * @param producerGroup Producer group, see the name-sake field.
@@ -716,7 +716,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
     public void setDefaultTopicQueueNums(int defaultTopicQueueNums) {
         this.defaultTopicQueueNums = defaultTopicQueueNums;
     }
-
+    /***/
     public int getRetryTimesWhenSendFailed() {
         return retryTimesWhenSendFailed;
     }
@@ -756,7 +756,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
     public void setSendLatencyFaultEnable(final boolean sendLatencyFaultEnable) {
         this.defaultMQProducerImpl.setSendLatencyFaultEnable(sendLatencyFaultEnable);
     }
-
+    /**异步发送失败重试次数*/
     public int getRetryTimesWhenSendAsyncFailed() {
         return retryTimesWhenSendAsyncFailed;
     }

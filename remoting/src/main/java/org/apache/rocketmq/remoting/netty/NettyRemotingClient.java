@@ -99,7 +99,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
     public NettyRemotingClient(final NettyClientConfig nettyClientConfig) {
         this(nettyClientConfig, null);
     }
-
+    /**NettyRemotingClient*/
     public NettyRemotingClient(final NettyClientConfig nettyClientConfig,
         final ChannelEventListener channelEventListener) {
         super(nettyClientConfig.getClientOnewaySemaphoreValue(), nettyClientConfig.getClientAsyncSemaphoreValue());
@@ -119,7 +119,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
                 return new Thread(r, "NettyClientPublicExecutor_" + this.threadIndex.incrementAndGet());
             }
         });
-
+        //eventLoop
         this.eventLoopGroupWorker = new NioEventLoopGroup(1, new ThreadFactory() {
             private AtomicInteger threadIndex = new AtomicInteger(0);
 
@@ -149,7 +149,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
     }
 
     @Override
-    public void start() {
+    public void start() {//启动channel
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(
             nettyClientConfig.getClientWorkerThreads(),
             new ThreadFactory() {
@@ -172,9 +172,9 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
                     ChannelPipeline pipeline = ch.pipeline();
-                    if (nettyClientConfig.isUseTLS()) {
+                    if (nettyClientConfig.isUseTLS()) {//如果是TLS
                         if (null != sslContext) {
-                            pipeline.addFirst(defaultEventExecutorGroup, "sslHandler", sslContext.newHandler(ch.alloc()));
+                            pipeline.addFirst(defaultEventExecutorGroup, "sslHandler", sslContext.newHandler(ch.alloc()));//handler的执行器
                             log.info("Prepend SSL handler");
                         } else {
                             log.warn("Connections are insecure as SSLContext is null!");
@@ -186,7 +186,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
                         new NettyDecoder(),
                         new IdleStateHandler(0, 0, nettyClientConfig.getClientChannelMaxIdleTimeSeconds()),
                         new NettyConnectManageHandler(),
-                        new NettyClientHandler());
+                        new NettyClientHandler());//设置handler的执行器
                 }
             });
 
@@ -285,7 +285,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
     public void registerRPCHook(RPCHook rpcHook) {
         this.rpcHook = rpcHook;
     }
-
+    /**关闭Channel*/
     public void closeChannel(final Channel channel) {
         if (null == channel)
             return;
@@ -388,7 +388,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
             throw new RemotingConnectException(addr);
         }
     }
-
+    /**如果channel不存在会重新创建*/
     private Channel getAndCreateChannel(final String addr) throws InterruptedException {
         if (null == addr)
             return getAndCreateNameserverChannel();
@@ -446,7 +446,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 
         return null;
     }
-
+    /**创建channel*/
     private Channel createChannel(final String addr) throws InterruptedException {
         ChannelWrapper cw = this.channelTables.get(addr);
         if (cw != null && cw.isOK()) {
@@ -525,7 +525,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
             }
         } else {
             this.closeChannel(addr, channel);
-            throw new RemotingConnectException(addr);
+            throw new RemotingConnectException(addr);//
         }
     }
 

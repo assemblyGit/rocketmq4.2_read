@@ -31,7 +31,7 @@ public class Configuration {
 
     private final Logger log;
 
-    private List<Object> configObjectList = new ArrayList<Object>(4);
+    private List<Object> configObjectList = new ArrayList<Object>(4);//配置的对象
     private String storePath;
     private boolean storePathFromConfig = false;
     private Object storePathObject;
@@ -46,7 +46,7 @@ public class Configuration {
     public Configuration(Logger log) {
         this.log = log;
     }
-
+    /***/
     public Configuration(Logger log, Object... configObjects) {
         this.log = log;
         if (configObjects == null || configObjects.length == 0) {
@@ -62,7 +62,7 @@ public class Configuration {
         this.storePath = storePath;
     }
 
-    /**
+    /**    <p>注册配置对象</p>
      * register config object
      *
      * @return the current Configuration object
@@ -112,7 +112,7 @@ public class Configuration {
         return this;
     }
 
-    /**
+    /**    <p>store</p>
      * The store path will be gotten from the field of object.
      *
      * @throws java.lang.RuntimeException if the field of object is not exist.
@@ -178,7 +178,7 @@ public class Configuration {
                 // the property must be exist when update
                 mergeIfExist(properties, this.allConfigs);
 
-                for (Object configObject : configObjectList) {
+                for (Object configObject : configObjectList) {//更新配置对象
                     // not allConfigs to update...
                     MixAll.properties2Object(properties, configObject);
                 }
@@ -273,7 +273,7 @@ public class Configuration {
 
         return stringBuilder.toString();
     }
-
+    /**合并*/
     private void merge(Properties from, Properties to) {
         for (Object key : from.keySet()) {
             Object fromObj = from.get(key), toObj = to.get(key);

@@ -154,7 +154,7 @@ public class StatsItem {
         synchronized (this.csListMinute) {
             this.csListMinute.add(new CallSnapshot(System.currentTimeMillis(), this.times.get(), this.value
                 .get()));
-            if (this.csListMinute.size() > 7) {
+            if (this.csListMinute.size() > 7) {//没10秒采样
                 this.csListMinute.removeFirst();
             }
         }
@@ -181,7 +181,7 @@ public class StatsItem {
     }
 
     public void printAtMinutes() {
-        StatsSnapshot ss = computeStatsData(this.csListMinute);
+        StatsSnapshot ss = computeStatsData(this.csListMinute);//计算统计数据
         log.info(String.format("[%s] [%s] Stats In One Minute, SUM: %d TPS: %.2f AVGPT: %.2f",
             this.statsName,
             this.statsKey,

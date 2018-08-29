@@ -43,9 +43,9 @@ public class MQClientManager {
     public MQClientInstance getAndCreateMQClientInstance(final ClientConfig clientConfig) {
         return getAndCreateMQClientInstance(clientConfig, null);
     }
-
+    /**clientid对应的client实例*/
     public MQClientInstance getAndCreateMQClientInstance(final ClientConfig clientConfig, RPCHook rpcHook) {
-        String clientId = clientConfig.buildMQClientId();
+        String clientId = clientConfig.buildMQClientId();//mq的client id
         MQClientInstance instance = this.factoryTable.get(clientId);
         if (null == instance) {
             instance =

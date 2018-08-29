@@ -67,7 +67,7 @@ public abstract class AbstractSendMessageProcessor implements NettyRequestProces
             new InetSocketAddress(brokerController.getBrokerConfig().getBrokerIP1(), brokerController
                 .getNettyServerConfig().getListenPort());
     }
-
+    /**构建上下文*/
     protected SendMessageContext buildMsgContext(ChannelHandlerContext ctx,
         SendMessageRequestHeader requestHeader) {
         if (!this.hasSendMessageHook()) {
@@ -75,9 +75,9 @@ public abstract class AbstractSendMessageProcessor implements NettyRequestProces
         }
         SendMessageContext mqtraceContext;
         mqtraceContext = new SendMessageContext();
-        mqtraceContext.setProducerGroup(requestHeader.getProducerGroup());
+        mqtraceContext.setProducerGroup(requestHeader.getProducerGroup());//生产者组
         mqtraceContext.setTopic(requestHeader.getTopic());
-        mqtraceContext.setMsgProps(requestHeader.getProperties());
+        mqtraceContext.setMsgProps(requestHeader.getProperties());//msg的属性
         mqtraceContext.setBornHost(RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
         mqtraceContext.setBrokerAddr(this.brokerController.getBrokerAddr());
         mqtraceContext.setBrokerRegionId(this.brokerController.getBrokerConfig().getRegionId());
@@ -89,7 +89,7 @@ public abstract class AbstractSendMessageProcessor implements NettyRequestProces
         properties.put(MessageConst.PROPERTY_TRACE_SWITCH, String.valueOf(this.brokerController.getBrokerConfig().isTraceOn()));
         requestHeader.setProperties(MessageDecoder.messageProperties2String(properties));
 
-        if (uniqueKey == null) {
+        if (uniqueKey == null) {//独一无二的key
             uniqueKey = "";
         }
         mqtraceContext.setMsgUniqueKey(uniqueKey);
@@ -232,7 +232,7 @@ public abstract class AbstractSendMessageProcessor implements NettyRequestProces
     public void registerSendMessageHook(List<SendMessageHook> sendMessageHookList) {
         this.sendMessageHookList = sendMessageHookList;
     }
-
+    /**写入返回*/
     protected void doResponse(ChannelHandlerContext ctx, RemotingCommand request,
         final RemotingCommand response) {
         if (!request.isOnewayRPC()) {
@@ -273,7 +273,7 @@ public abstract class AbstractSendMessageProcessor implements NettyRequestProces
             }
         }
     }
-
+    /**解析*/
     protected SendMessageRequestHeader parseRequestHeader(RemotingCommand request)
         throws RemotingCommandException {
 

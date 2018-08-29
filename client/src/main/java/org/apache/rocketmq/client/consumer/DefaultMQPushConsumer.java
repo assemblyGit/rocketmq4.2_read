@@ -39,10 +39,10 @@ import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 
-/**
+/**    <p>在大多数场景下,这是消费消息的推荐类</p>
  * In most scenarios, this is the mostly recommended class to consume messages.
  * </p>
- *
+ *     <p>技术上讲,这个push client只是底层pull service的虚拟warpper.</p>
  * Technically speaking, this push client is virtually a wrapper of the underlying pull service. Specifically, on
  * arrival of messages pulled from brokers, it roughly invokes the registered callback handler to feed the messages.
  * </p>
@@ -160,7 +160,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
      */
     private long adjustThreadPoolNumsThreshold = 100000;
 
-    /**
+    /**    <p>并发消费最大 跨度</p>
      * Concurrently max span offset.it has no effect on sequential consumption
      */
     private int consumeConcurrentlyMaxSpan = 2000;
@@ -207,7 +207,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
      */
     private long pullInterval = 0;
 
-    /**
+    /**    <p>表示批量消费消息数</p>
      * Batch consumption size
      */
     private int consumeMessageBatchMaxSize = 1;
@@ -241,7 +241,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
      */
     private long suspendCurrentQueueTimeMillis = 1000;
 
-    /**
+    /**    <p>消费者线程中被阻塞的次数</p>
      * Maximum amount of time in minutes a message may block the consuming thread.
      */
     private long consumeTimeout = 15;
@@ -471,7 +471,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
         this.subscription = subscription;
     }
 
-    /**
+    /**    <p>发送给broker在未来被传送</p>
      * Send message back to broker which will be re-delivered in future.
      *
      * @param msg Message to send back.

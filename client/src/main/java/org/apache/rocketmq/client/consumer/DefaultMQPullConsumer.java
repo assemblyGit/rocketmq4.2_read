@@ -39,7 +39,7 @@ import org.apache.rocketmq.remoting.exception.RemotingException;
 public class DefaultMQPullConsumer extends ClientConfig implements MQPullConsumer {
     protected final transient DefaultMQPullConsumerImpl defaultMQPullConsumerImpl;
 
-    /**
+    /**    <p>对相同的group做一样的事情</p>
      * Do the same thing for the same Group, the application must be set,and
      * guarantee Globally unique
      */

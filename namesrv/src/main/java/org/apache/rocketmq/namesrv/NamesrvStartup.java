@@ -61,7 +61,7 @@ public class NamesrvStartup {
             final NamesrvConfig namesrvConfig = new NamesrvConfig();
             final NettyServerConfig nettyServerConfig = new NettyServerConfig();
             nettyServerConfig.setListenPort(9876);
-            if (commandLine.hasOption('c')) {
+            if (commandLine.hasOption('c')) {//存在 c的选项
                 String file = commandLine.getOptionValue('c');
                 if (file != null) {
                     InputStream in = new BufferedInputStream(new FileInputStream(file));
@@ -85,7 +85,7 @@ public class NamesrvStartup {
 
             MixAll.properties2Object(ServerUtil.commandLine2Properties(commandLine), namesrvConfig);
 
-            if (null == namesrvConfig.getRocketmqHome()) {
+            if (null == namesrvConfig.getRocketmqHome()) {//rocketmq hode
                 System.out.printf("Please set the %s variable in your environment to match the location of the RocketMQ installation%n", MixAll.ROCKETMQ_HOME_ENV);
                 System.exit(-2);
             }
@@ -102,7 +102,7 @@ public class NamesrvStartup {
 
             final NamesrvController controller = new NamesrvController(namesrvConfig, nettyServerConfig);
 
-            // remember all configs to prevent discard
+            // remember all configs to prevent discard    记住所有config 避免抛弃
             controller.getConfiguration().registerConfig(properties);
 
             boolean initResult = controller.initialize();

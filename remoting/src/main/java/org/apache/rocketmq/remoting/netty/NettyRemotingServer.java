@@ -94,7 +94,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
         this.nettyServerConfig = nettyServerConfig;
         this.channelEventListener = channelEventListener;
 
-        int publicThreadNums = nettyServerConfig.getServerCallbackExecutorThreads();
+        int publicThreadNums = nettyServerConfig.getServerCallbackExecutorThreads();//
         if (publicThreadNums <= 0) {
             publicThreadNums = 4;
         }
@@ -142,7 +142,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
         TlsMode tlsMode = TlsSystemConfig.tlsMode;
         log.info("Server is running in TLS {} mode", tlsMode.getName());
 
-        if (tlsMode != TlsMode.DISABLED) {
+        if (tlsMode != TlsMode.DISABLED) {//非禁用Tls
             try {
                 sslContext = TlsHelper.buildSslContext(false);
                 log.info("SSLContext created for server");
@@ -153,7 +153,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
             }
         }
     }
-
+    /**使用netty自身实现epoll*/
     private boolean useEpoll() {
         return RemotingUtil.isLinuxPlatform()
             && nettyServerConfig.isUseEpollNativeSelector()
@@ -390,7 +390,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, RemotingCommand msg) throws Exception {
-            processMessageReceived(ctx, msg);
+            processMessageReceived(ctx, msg);//处理接受到的消息
         }
     }
 
@@ -433,7 +433,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 
         @Override
         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-            if (evt instanceof IdleStateEvent) {
+            if (evt instanceof IdleStateEvent) {//如果是idle事件
                 IdleStateEvent event = (IdleStateEvent) evt;
                 if (event.state().equals(IdleState.ALL_IDLE)) {
                     final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());

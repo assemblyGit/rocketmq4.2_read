@@ -30,7 +30,7 @@ public class TopicSysFlag {
         }
 
         if (hasUnitSub) {
-            sysFlag |= FLAG_UNIT_SUB;
+            sysFlag |= FLAG_UNIT_SUB;//unit订阅
         }
 
         return sysFlag;

@@ -81,7 +81,7 @@ public class GetMessageResult {
     public List<ByteBuffer> getMessageBufferList() {
         return messageBufferList;
     }
-
+    /**添加获取到的数据*/
     public void addMessage(final SelectMappedBufferResult mapedBuffer) {
         this.messageMapedList.add(mapedBuffer);
         this.messageBufferList.add(mapedBuffer.getByteBuffer());

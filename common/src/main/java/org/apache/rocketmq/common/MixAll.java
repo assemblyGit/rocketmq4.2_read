@@ -88,9 +88,9 @@ public class MixAll {
     public static final String UNIQUE_MSG_QUERY_FLAG = "_UNIQUE_KEY_QUERY";
     public static final String DEFAULT_TRACE_REGION_ID = "DefaultRegion";
     public static final String CONSUME_CONTEXT_TYPE = "ConsumeContextType";
-
+    /**获取ws addr*/
     public static String getWSAddr() {
-        String wsDomainName = System.getProperty("rocketmq.namesrv.domain", DEFAULT_NAMESRV_ADDR_LOOKUP);
+        String wsDomainName = System.getProperty("rocketmq.namesrv.domain", DEFAULT_NAMESRV_ADDR_LOOKUP);//默认的namesrv查找服务
         String wsDomainSubgroup = System.getProperty("rocketmq.namesrv.domain.subgroup", "nsaddr");
         String wsAddr = "http://" + wsDomainName + ":8080/rocketmq/" + wsDomainSubgroup;
         if (wsDomainName.indexOf(":") > 0) {
@@ -118,7 +118,7 @@ public class MixAll {
     public static String brokerVIPChannel(final boolean isChange, final String brokerAddr) {
         if (isChange) {
             String[] ipAndPort = brokerAddr.split(":");
-            String brokerAddrNew = ipAndPort[0] + ":" + (Integer.parseInt(ipAndPort[1]) - 2);
+            String brokerAddrNew = ipAndPort[0] + ":" + (Integer.parseInt(ipAndPort[1]) - 2);//vip通道,请求少
             return brokerAddrNew;
         } else {
             return brokerAddr;
@@ -175,7 +175,7 @@ public class MixAll {
             }
         }
     }
-
+    /***/
     public static String file2String(final String fileName) throws IOException {
         File file = new File(fileName);
         return file2String(file);
@@ -315,7 +315,7 @@ public class MixAll {
     }
 
     public static void properties2Object(final Properties p, final Object object) {
-        Method[] methods = object.getClass().getMethods();
+        Method[] methods = object.getClass().getMethods();//获取所有共有方法
         for (Method method : methods) {
             String mn = method.getName();
             if (mn.startsWith("set")) {

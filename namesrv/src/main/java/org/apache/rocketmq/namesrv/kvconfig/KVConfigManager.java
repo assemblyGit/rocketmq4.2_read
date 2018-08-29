@@ -36,12 +36,12 @@ public class KVConfigManager {
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final HashMap<String/* Namespace */, HashMap<String/* Key */, String/* Value */>> configTable =
-        new HashMap<String, HashMap<String, String>>();
-
+        new HashMap<String, HashMap<String, String>>();  //config table
+    /**K V config manager*/
     public KVConfigManager(NamesrvController namesrvController) {
         this.namesrvController = namesrvController;
     }
-
+    /***/
     public void load() {
         String content = null;
         try {
@@ -63,7 +63,7 @@ public class KVConfigManager {
         try {
             this.lock.writeLock().lockInterruptibly();
             try {
-                HashMap<String, String> kvTable = this.configTable.get(namespace);
+                HashMap<String, String> kvTable = this.configTable.get(namespace);//命名空间
                 if (null == kvTable) {
                     kvTable = new HashMap<String, String>();
                     this.configTable.put(namespace, kvTable);

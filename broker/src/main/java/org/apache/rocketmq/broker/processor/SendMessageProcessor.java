@@ -67,12 +67,12 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
             case RequestCode.CONSUMER_SEND_MSG_BACK:
                 return this.consumerSendMsgBack(ctx, request);
             default:
-                SendMessageRequestHeader requestHeader = parseRequestHeader(request);
+                SendMessageRequestHeader requestHeader = parseRequestHeader(request);//解析
                 if (requestHeader == null) {
                     return null;
                 }
 
-                mqtraceContext = buildMsgContext(ctx, requestHeader);
+                mqtraceContext = buildMsgContext(ctx, requestHeader);//msg context
                 this.executeSendMessageHookBefore(ctx, request, mqtraceContext);
 
                 RemotingCommand response;
@@ -92,7 +92,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         return this.brokerController.getMessageStore().isOSPageCacheBusy() ||
             this.brokerController.getMessageStore().isTransientStorePoolDeficient();
     }
-
+    /**消费者发回消息*/
     private RemotingCommand consumerSendMsgBack(final ChannelHandlerContext ctx, final RemotingCommand request)
         throws RemotingCommandException {
         final RemotingCommand response = RemotingCommand.createResponseCommand(null);
@@ -126,13 +126,13 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
             return response;
         }
 
-        if (subscriptionGroupConfig.getRetryQueueNums() <= 0) {
+        if (subscriptionGroupConfig.getRetryQueueNums() <= 0) {//重试队列
             response.setCode(ResponseCode.SUCCESS);
             response.setRemark(null);
             return response;
         }
 
-        String newTopic = MixAll.getRetryTopic(requestHeader.getGroup());
+        String newTopic = MixAll.getRetryTopic(requestHeader.getGroup());//构建话题为 重试话题
         int queueIdInt = Math.abs(this.random.nextInt() % 99999999) % subscriptionGroupConfig.getRetryQueueNums();
 
         int topicSysFlag = 0;
@@ -157,14 +157,14 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         }
 
         MessageExt msgExt = this.brokerController.getMessageStore().lookMessageByOffset(requestHeader.getOffset());
-        if (null == msgExt) {
+        if (null == msgExt) {//原始消息不存在
             response.setCode(ResponseCode.SYSTEM_ERROR);
             response.setRemark("look message by offset failed, " + requestHeader.getOffset());
             return response;
         }
 
         final String retryTopic = msgExt.getProperty(MessageConst.PROPERTY_RETRY_TOPIC);
-        if (null == retryTopic) {
+        if (null == retryTopic) {//重试topic
             MessageAccessor.putProperty(msgExt, MessageConst.PROPERTY_RETRY_TOPIC, msgExt.getTopic());
         }
         msgExt.setWaitStoreMsgOK(false);
@@ -177,8 +177,8 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         }
 
         if (msgExt.getReconsumeTimes() >= maxReconsumeTimes
-            || delayLevel < 0) {
-            newTopic = MixAll.getDLQTopic(requestHeader.getGroup());
+            || delayLevel < 0) {//直接死亡
+            newTopic = MixAll.getDLQTopic(requestHeader.getGroup());//死亡队列
             queueIdInt = Math.abs(this.random.nextInt() % 99999999) % DLQ_NUMS_PER_GROUP;
 
             topicConfig = this.brokerController.getTopicConfigManager().createTopicInSendMessageBackMethod(newTopic,
@@ -250,7 +250,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         RemotingCommand request,
         MessageExt msg, TopicConfig topicConfig) {
         String newTopic = requestHeader.getTopic();
-        if (null != newTopic && newTopic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) {
+        if (null != newTopic && newTopic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) {//如果是重试组开始
             String groupName = newTopic.substring(MixAll.RETRY_GROUP_TOPIC_PREFIX.length());
             SubscriptionGroupConfig subscriptionGroupConfig =
                 this.brokerController.getSubscriptionGroupManager().findSubscriptionGroupConfig(groupName);
@@ -261,12 +261,12 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
                 return false;
             }
 
-            int maxReconsumeTimes = subscriptionGroupConfig.getRetryMaxTimes();
+            int maxReconsumeTimes = subscriptionGroupConfig.getRetryMaxTimes();//重试组打次数
             if (request.getVersion() >= MQVersion.Version.V3_4_9.ordinal()) {
                 maxReconsumeTimes = requestHeader.getMaxReconsumeTimes();
             }
             int reconsumeTimes = requestHeader.getReconsumeTimes() == null ? 0 : requestHeader.getReconsumeTimes();
-            if (reconsumeTimes >= maxReconsumeTimes) {
+            if (reconsumeTimes >= maxReconsumeTimes) {//如果重试次数大于最大重试次数
                 newTopic = MixAll.getDLQTopic(groupName);
                 int queueIdInt = Math.abs(this.random.nextInt() % 99999999) % DLQ_NUMS_PER_GROUP;
                 topicConfig = this.brokerController.getTopicConfigManager().createTopicInSendMessageBackMethod(newTopic,
@@ -326,7 +326,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         if (queueIdInt < 0) {
             queueIdInt = Math.abs(this.random.nextInt() % 99999999) % topicConfig.getWriteQueueNums();
         }
-
+        /**内部消息*/
         MessageExtBrokerInner msgInner = new MessageExtBrokerInner();
         msgInner.setTopic(requestHeader.getTopic());
         msgInner.setQueueId(queueIdInt);
@@ -344,7 +344,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         msgInner.setStoreHost(this.getStoreHost());
         msgInner.setReconsumeTimes(requestHeader.getReconsumeTimes() == null ? 0 : requestHeader.getReconsumeTimes());
 
-        if (this.brokerController.getBrokerConfig().isRejectTransactionMessage()) {
+        if (this.brokerController.getBrokerConfig().isRejectTransactionMessage()) {//拒绝事务消息
             String traFlag = msgInner.getProperty(MessageConst.PROPERTY_TRANSACTION_PREPARED);
             if (traFlag != null) {
                 response.setCode(ResponseCode.NO_PERMISSION);
@@ -480,7 +480,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
 
         log.debug("Receive SendMessage request command {}", request);
 
-        final long startTimstamp = this.brokerController.getBrokerConfig().getStartAcceptSendRequestTimeStamp();
+        final long startTimstamp = this.brokerController.getBrokerConfig().getStartAcceptSendRequestTimeStamp();//接受send 请求的时间戳
         if (this.brokerController.getMessageStore().now() < startTimstamp) {
             response.setCode(ResponseCode.SYSTEM_ERROR);
             response.setRemark(String.format("broker unable to service, until %s", UtilAll.timeMillisToHumanString2(startTimstamp)));

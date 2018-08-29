@@ -54,7 +54,7 @@ public class NamesrvController {
     private ExecutorService remotingExecutor;
 
     private Configuration configuration;
-
+    /**NamesrvController*/
     public NamesrvController(NamesrvConfig namesrvConfig, NettyServerConfig nettyServerConfig) {
         this.namesrvConfig = namesrvConfig;
         this.nettyServerConfig = nettyServerConfig;
@@ -64,10 +64,10 @@ public class NamesrvController {
         this.configuration = new Configuration(
             log,
             this.namesrvConfig, this.nettyServerConfig
-        );
-        this.configuration.setStorePathFromConfig(this.namesrvConfig, "configStorePath");
+        );//配置对象
+        this.configuration.setStorePathFromConfig(this.namesrvConfig, "configStorePath");//设置store path
     }
-
+    /**初始化*/
     public boolean initialize() {
 
         this.kvConfigManager.load();

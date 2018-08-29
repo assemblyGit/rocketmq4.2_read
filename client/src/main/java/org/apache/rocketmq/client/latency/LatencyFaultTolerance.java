@@ -16,7 +16,7 @@
  */
 
 package org.apache.rocketmq.client.latency;
-
+/**潜在容错*/
 public interface LatencyFaultTolerance<T> {
     void updateFaultItem(final T name, final long currentLatency, final long notAvailableDuration);
 

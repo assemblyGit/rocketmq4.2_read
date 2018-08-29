@@ -37,7 +37,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
+/**    <p>客户filter data manager,consumer使用expression filter</p>
  * Consumer filter data manager.Just manage the consumers use expression filter.
  */
 public class ConsumerFilterManager extends ConfigManager {
@@ -54,7 +54,7 @@ public class ConsumerFilterManager extends ConfigManager {
 
     public ConsumerFilterManager() {
         // just for test
-        this.bloomFilter = BloomFilter.createByFn(20, 64);
+        this.bloomFilter = BloomFilter.createByFn(20, 64);//布隆拦截器
     }
 
     public ConsumerFilterManager(BrokerController brokerController) {
@@ -69,7 +69,7 @@ public class ConsumerFilterManager extends ConfigManager {
         );
     }
 
-    /**
+    /**    <p>构建 filter data</p>
      * Build consumer filter data.Be care, bloom filter data is not included.
      *
      * @return maybe null
@@ -100,7 +100,7 @@ public class ConsumerFilterManager extends ConfigManager {
 
         return consumerFilterData;
     }
-
+    /**注册filter*/
     public void register(final String consumerGroup, final Collection<SubscriptionData> subList) {
         for (SubscriptionData subscriptionData : subList) {
             register(
@@ -116,7 +116,7 @@ public class ConsumerFilterManager extends ConfigManager {
         Collection<ConsumerFilterData> groupFilterData = getByGroup(consumerGroup);
 
         Iterator<ConsumerFilterData> iterator = groupFilterData.iterator();
-        while (iterator.hasNext()) {
+        while (iterator.hasNext()) {//移除不存在的filter
             ConsumerFilterData filterData = iterator.next();
 
             boolean exist = false;
@@ -133,14 +133,14 @@ public class ConsumerFilterManager extends ConfigManager {
             }
         }
     }
-
+    /**注册*/
     public boolean register(final String topic, final String consumerGroup, final String expression,
         final String type, final long clientVersion) {
         if (ExpressionType.isTagType(type)) {
             return false;
         }
 
-        if (expression == null || expression.length() == 0) {
+        if (expression == null || expression.length() == 0) {//如果不存在表达式
             return false;
         }
 
@@ -152,7 +152,7 @@ public class ConsumerFilterManager extends ConfigManager {
             filterDataMapByTopic = prev != null ? prev : temp;
         }
 
-        BloomFilterData bloomFilterData = bloomFilter.generate(consumerGroup + "#" + topic);
+        BloomFilterData bloomFilterData = bloomFilter.generate(consumerGroup + "#" + topic);//为group 和 topic计算bloom data
 
         return filterDataMapByTopic.register(consumerGroup, expression, type, bloomFilterData, clientVersion);
     }
@@ -162,7 +162,7 @@ public class ConsumerFilterManager extends ConfigManager {
             this.filterDataByTopic.get(topic).unRegister(consumerGroup);
         }
     }
-
+    /**topic 和 消费者组的过滤数据*/
     public ConsumerFilterData get(final String topic, final String consumerGroup) {
         if (!this.filterDataByTopic.containsKey(topic)) {
             return null;
@@ -216,7 +216,7 @@ public class ConsumerFilterManager extends ConfigManager {
     }
 
     @Override
-    public String configFilePath() {
+    public String configFilePath() {//config 文件配置
         if (this.brokerController != null) {
             return BrokerPathConfigHelper.getConsumerFilterPath(
                 this.brokerController.getMessageStoreConfig().getStorePathRootDir()

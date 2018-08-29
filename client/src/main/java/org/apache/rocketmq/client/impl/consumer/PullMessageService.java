@@ -52,7 +52,7 @@ public class PullMessageService extends ServiceThread {
             }
         }, timeDelay, TimeUnit.MILLISECONDS);
     }
-
+    /**放入pullRequestQueue*/
     public void executePullRequestImmediately(final PullRequest pullRequest) {
         try {
             this.pullRequestQueue.put(pullRequest);
@@ -86,7 +86,7 @@ public class PullMessageService extends ServiceThread {
         while (!this.isStopped()) {
             try {
                 PullRequest pullRequest = this.pullRequestQueue.take();
-                if (pullRequest != null) {
+                if (pullRequest != null) {//pullMessage
                     this.pullMessage(pullRequest);
                 }
             } catch (InterruptedException e) {

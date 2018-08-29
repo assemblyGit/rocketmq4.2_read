@@ -34,7 +34,7 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.protocol.body.ProcessQueueInfo;
 import org.slf4j.Logger;
 
-/**
+/**    <p>Queue 消费快照</p>
  * Queue consumption snapshot
  */
 public class ProcessQueue {
@@ -44,7 +44,7 @@ public class ProcessQueue {
     private final static long PULL_MAX_IDLE_TIME = Long.parseLong(System.getProperty("rocketmq.client.pull.pullMaxIdleTime", "120000"));
     private final Logger log = ClientLogger.getLog();
     private final ReadWriteLock lockTreeMap = new ReentrantReadWriteLock();
-    private final TreeMap<Long, MessageExt> msgTreeMap = new TreeMap<Long, MessageExt>();
+    private final TreeMap<Long, MessageExt> msgTreeMap = new TreeMap<Long, MessageExt>();//消息偏移到msgExt的映射
     private final AtomicLong msgCount = new AtomicLong();
     private final AtomicLong msgSize = new AtomicLong();
     private final Lock lockConsume = new ReentrantLock();
@@ -65,7 +65,7 @@ public class ProcessQueue {
     public boolean isLockExpired() {
         return (System.currentTimeMillis() - this.lastLockTimestamp) > REBALANCE_LOCK_MAX_LIVE_TIME;
     }
-
+    /**pull超时*/
     public boolean isPullExpired() {
         return (System.currentTimeMillis() - this.lastPullTimestamp) > PULL_MAX_IDLE_TIME;
     }
@@ -122,7 +122,7 @@ public class ProcessQueue {
             }
         }
     }
-
+    /**添加待处理的消息*/
     public boolean putMessage(final List<MessageExt> msgs) {
         boolean dispatchToConsume = false;
         try {
@@ -130,7 +130,7 @@ public class ProcessQueue {
             try {
                 int validMsgCnt = 0;
                 for (MessageExt msg : msgs) {
-                    MessageExt old = msgTreeMap.put(msg.getQueueOffset(), msg);
+                    MessageExt old = msgTreeMap.put(msg.getQueueOffset(), msg);//队列中的偏移
                     if (null == old) {
                         validMsgCnt++;
                         this.queueOffsetMax = msg.getQueueOffset();
@@ -139,7 +139,7 @@ public class ProcessQueue {
                 }
                 msgCount.addAndGet(validMsgCnt);
 
-                if (!msgTreeMap.isEmpty() && !this.consuming) {
+                if (!msgTreeMap.isEmpty() && !this.consuming) {//如果不为空且不是在消费中,分发给消费更新为消费中
                     dispatchToConsume = true;
                     this.consuming = true;
                 }
@@ -189,7 +189,7 @@ public class ProcessQueue {
             this.lastConsumeTimestamp = now;
             try {
                 if (!msgTreeMap.isEmpty()) {
-                    result = this.queueOffsetMax + 1;
+                    result = this.queueOffsetMax + 1;//最大逻辑偏移
                     int removedCnt = 0;
                     for (MessageExt msg : msgs) {
                         MessageExt prev = msgTreeMap.remove(msg.getQueueOffset());
@@ -326,7 +326,7 @@ public class ProcessQueue {
 
         return result;
     }
-
+    /**是否存在临时消息*/
     public boolean hasTempMessage() {
         try {
             this.lockTreeMap.readLock().lockInterruptibly();

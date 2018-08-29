@@ -94,13 +94,13 @@ public class ConsumerManager {
             }
         }
     }
-
+    /**注册消费者*/
     public boolean registerConsumer(final String group, final ClientChannelInfo clientChannelInfo,
         ConsumeType consumeType, MessageModel messageModel, ConsumeFromWhere consumeFromWhere,
         final Set<SubscriptionData> subList, boolean isNotifyConsumerIdsChangedEnable) {
 
         ConsumerGroupInfo consumerGroupInfo = this.consumerTable.get(group);
-        if (null == consumerGroupInfo) {
+        if (null == consumerGroupInfo) {//一个消费者组要求一些基本元素一致
             ConsumerGroupInfo tmp = new ConsumerGroupInfo(group, consumeType, messageModel, consumeFromWhere);
             ConsumerGroupInfo prev = this.consumerTable.putIfAbsent(group, tmp);
             consumerGroupInfo = prev != null ? prev : tmp;
@@ -111,7 +111,7 @@ public class ConsumerManager {
                 consumeFromWhere);
         boolean r2 = consumerGroupInfo.updateSubscription(subList);
 
-        if (r1 || r2) {
+        if (r1 || r2) {//如果有新增
             if (isNotifyConsumerIdsChangedEnable) {
                 this.consumerIdsChangeListener.handle(ConsumerGroupEvent.CHANGE, group, consumerGroupInfo.getAllChannel());
             }

@@ -91,14 +91,14 @@ public class MQFaultStrategy {
 
         return tpInfo.selectOneMessageQueue(lastBrokerName);
     }
-
+    /**更新潜在容错*/
     public void updateFaultItem(final String brokerName, final long currentLatency, boolean isolation) {
         if (this.sendLatencyFaultEnable) {
             long duration = computeNotAvailableDuration(isolation ? 30000 : currentLatency);
             this.latencyFaultTolerance.updateFaultItem(brokerName, currentLatency, duration);
         }
     }
-
+    /**计算不可用的阈值*/
     private long computeNotAvailableDuration(final long currentLatency) {
         for (int i = latencyMax.length - 1; i >= 0; i--) {
             if (currentLatency >= latencyMax[i])

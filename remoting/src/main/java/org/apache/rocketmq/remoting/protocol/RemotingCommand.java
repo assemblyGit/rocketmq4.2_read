@@ -72,11 +72,11 @@ public class RemotingCommand {
     private int code;
     private LanguageCode language = LanguageCode.JAVA;
     private int version = 0;
-    private int opaque = requestId.getAndIncrement();
+    private int opaque = requestId.getAndIncrement();//请求的唯一id
     private int flag = 0;
     private String remark;
-    private HashMap<String, String> extFields;
-    private transient CommandCustomHeader customHeader;
+    private HashMap<String, String> extFields;//
+    private transient CommandCustomHeader customHeader;//
 
     private SerializeType serializeTypeCurrentRPC = serializeTypeConfigInThisServer;
 
@@ -84,7 +84,7 @@ public class RemotingCommand {
 
     protected RemotingCommand() {
     }
-
+    /**创建请求命令*/
     public static RemotingCommand createRequestCommand(int code, CommandCustomHeader customHeader) {
         RemotingCommand cmd = new RemotingCommand();
         cmd.setCode(code);
@@ -92,7 +92,7 @@ public class RemotingCommand {
         setCmdVersion(cmd);
         return cmd;
     }
-
+    /**设置版本*/
     private static void setCmdVersion(RemotingCommand cmd) {
         if (configVersion >= 0) {
             cmd.setVersion(configVersion);
@@ -230,7 +230,7 @@ public class RemotingCommand {
     public void writeCustomHeader(CommandCustomHeader customHeader) {
         this.customHeader = customHeader;
     }
-
+    /**解析命令自定义header*/
     public CommandCustomHeader decodeCommandCustomHeader(
         Class<? extends CommandCustomHeader> classHeader) throws RemotingCommandException {
         CommandCustomHeader objectHeader;
@@ -248,11 +248,11 @@ public class RemotingCommand {
             for (Field field : fields) {
                 if (!Modifier.isStatic(field.getModifiers())) {
                     String fieldName = field.getName();
-                    if (!fieldName.startsWith("this")) {
+                    if (!fieldName.startsWith("this")) {//非已this开头
                         try {
                             String value = this.extFields.get(fieldName);
                             if (null == value) {
-                                if (!isFieldNullable(field)) {
+                                if (!isFieldNullable(field)) {//CFNUllable注解
                                     throw new RemotingCommandException("the custom field <" + fieldName + "> is null");
                                 }
                                 continue;
@@ -360,8 +360,8 @@ public class RemotingCommand {
     }
 
     private byte[] headerEncode() {
-        this.makeCustomHeaderToNet();
-        if (SerializeType.ROCKETMQ == serializeTypeCurrentRPC) {
+        this.makeCustomHeaderToNet();//将自定义头部先转到extMap中
+        if (SerializeType.ROCKETMQ == serializeTypeCurrentRPC) {//如果rmq序列化
             return RocketMQSerializable.rocketMQProtocolEncode(this);
         } else {
             return RemotingSerializable.encode(this);

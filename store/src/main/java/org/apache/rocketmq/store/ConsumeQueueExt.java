@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
+/**    <p>consume queue的扩展,存储不是很重要的信息,</p>
  * Extend of consume queue, to store something not important,
  * such as message store time, filter bit map and etc.
  * <p/>
@@ -178,7 +178,7 @@ public class ConsumeQueueExt {
         return ret;
     }
 
-    /**
+    /**    <p>保存mapped buffer fule 并且返回地址</p>
      * Save to mapped buffer of file and return address.
      * <p>
      * Be careful, this method is not thread safe.
@@ -404,7 +404,7 @@ public class ConsumeQueueExt {
         return decorate(firstFile.getFileFromOffset());
     }
 
-    /**
+    /**    <>存储单元</p>
      * Store unit.
      */
     public static class CqExtUnit {

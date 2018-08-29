@@ -35,7 +35,7 @@ public class FilterAPI {
 
         return simple;
     }
-
+    /**构建订阅数据*/
     public static SubscriptionData buildSubscriptionData(final String consumerGroup, String topic,
         String subString) throws Exception {
         SubscriptionData subscriptionData = new SubscriptionData();
@@ -46,7 +46,7 @@ public class FilterAPI {
             subscriptionData.setSubString(SubscriptionData.SUB_ALL);
         } else {
             String[] tags = subString.split("\\|\\|");
-            if (tags.length > 0) {
+            if (tags.length > 0) {//标签
                 for (String tag : tags) {
                     if (tag.length() > 0) {
                         String trimString = tag.trim();
@@ -63,10 +63,10 @@ public class FilterAPI {
 
         return subscriptionData;
     }
-
+    /**根据订阅字符串构建订阅信息*/
     public static SubscriptionData build(final String topic, final String subString,
         final String type) throws Exception {
-        if (ExpressionType.TAG.equals(type) || type == null) {
+        if (ExpressionType.TAG.equals(type) || type == null) {//如果类型是tag
             return buildSubscriptionData(null, topic, subString);
         }
 

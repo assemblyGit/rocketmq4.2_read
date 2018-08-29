@@ -74,7 +74,7 @@ public class Validators {
         return matcher.matches();
     }
 
-    /**
+    /**    <p>校验message</p>
      * Validate message
      */
     public static void checkMessage(Message msg, DefaultMQProducer defaultMQProducer)
@@ -100,7 +100,7 @@ public class Validators {
         }
     }
 
-    /**
+    /**    <p>校验topoc</p>
      * Validate topic
      */
     public static void checkTopic(String topic) throws MQClientException {

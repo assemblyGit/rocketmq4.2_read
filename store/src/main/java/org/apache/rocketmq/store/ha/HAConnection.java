@@ -36,7 +36,7 @@ public class HAConnection {
     private WriteSocketService writeSocketService;
     private ReadSocketService readSocketService;
 
-    private volatile long slaveRequestOffset = -1;
+    private volatile long slaveRequestOffset = -1;//起始偏移
     private volatile long slaveAckOffset = -1;
 
     public HAConnection(final HAService haService, final SocketChannel socketChannel) throws IOException {
@@ -159,14 +159,14 @@ public class HAConnection {
                     if (readSize > 0) {
                         readSizeZeroTimes = 0;
                         this.lastReadTimestamp = HAConnection.this.haService.getDefaultMessageStore().getSystemClock().now();
-                        if ((this.byteBufferRead.position() - this.processPostion) >= 8) {
+                        if ((this.byteBufferRead.position() - this.processPostion) >= 8) {//8字节的长度
                             int pos = this.byteBufferRead.position() - (this.byteBufferRead.position() % 8);
-                            long readOffset = this.byteBufferRead.getLong(pos - 8);
+                            long readOffset = this.byteBufferRead.getLong(pos - 8);//最后8字节
                             this.processPostion = pos;
 
-                            HAConnection.this.slaveAckOffset = readOffset;
+                            HAConnection.this.slaveAckOffset = readOffset;//slave ack的偏移
                             if (HAConnection.this.slaveRequestOffset < 0) {
-                                HAConnection.this.slaveRequestOffset = readOffset;
+                                HAConnection.this.slaveRequestOffset = readOffset;//读取到的偏移的下一个
                                 log.info("slave[" + HAConnection.this.clientAddr + "] request offset " + readOffset);
                             }
 
@@ -221,7 +221,7 @@ public class HAConnection {
                         continue;
                     }
 
-                    if (-1 == this.nextTransferFromWhere) {
+                    if (-1 == this.nextTransferFromWhere) {//如果下次传输起点未知
                         if (0 == HAConnection.this.slaveRequestOffset) {
                             long masterOffset = HAConnection.this.haService.getDefaultMessageStore().getCommitLog().getMaxOffset();
                             masterOffset =
@@ -235,29 +235,29 @@ public class HAConnection {
 
                             this.nextTransferFromWhere = masterOffset;
                         } else {
-                            this.nextTransferFromWhere = HAConnection.this.slaveRequestOffset;
+                            this.nextTransferFromWhere = HAConnection.this.slaveRequestOffset;//下次传输的起点
                         }
 
                         log.info("master transfer data from " + this.nextTransferFromWhere + " to slave[" + HAConnection.this.clientAddr
                             + "], and slave request " + HAConnection.this.slaveRequestOffset);
                     }
 
-                    if (this.lastWriteOver) {
+                    if (this.lastWriteOver) {//上次
 
                         long interval =
                             HAConnection.this.haService.getDefaultMessageStore().getSystemClock().now() - this.lastWriteTimestamp;
 
                         if (interval > HAConnection.this.haService.getDefaultMessageStore().getMessageStoreConfig()
-                            .getHaSendHeartbeatInterval()) {
+                            .getHaSendHeartbeatInterval()) {//ha心跳间隔
 
                             // Build Header
                             this.byteBufferHeader.position(0);
                             this.byteBufferHeader.limit(headerSize);
-                            this.byteBufferHeader.putLong(this.nextTransferFromWhere);
+                            this.byteBufferHeader.putLong(this.nextTransferFromWhere);//传输起始
                             this.byteBufferHeader.putInt(0);
                             this.byteBufferHeader.flip();
 
-                            this.lastWriteOver = this.transferData();
+                            this.lastWriteOver = this.transferData();//发送心跳包
                             if (!this.lastWriteOver)
                                 continue;
                         }
@@ -269,14 +269,14 @@ public class HAConnection {
 
                     SelectMappedBufferResult selectResult =
                         HAConnection.this.haService.getDefaultMessageStore().getCommitLogData(this.nextTransferFromWhere);
-                    if (selectResult != null) {
+                    if (selectResult != null) {//查找偏移后的数据
                         int size = selectResult.getSize();
                         if (size > HAConnection.this.haService.getDefaultMessageStore().getMessageStoreConfig().getHaTransferBatchSize()) {
-                            size = HAConnection.this.haService.getDefaultMessageStore().getMessageStoreConfig().getHaTransferBatchSize();
+                            size = HAConnection.this.haService.getDefaultMessageStore().getMessageStoreConfig().getHaTransferBatchSize();//一批数据大小
                         }
 
                         long thisOffset = this.nextTransferFromWhere;
-                        this.nextTransferFromWhere += size;
+                        this.nextTransferFromWhere += size;//下次传输起点
 
                         selectResult.getByteBuffer().limit(size);
                         this.selectMappedBufferResult = selectResult;
@@ -291,7 +291,7 @@ public class HAConnection {
                         this.lastWriteOver = this.transferData();
                     } else {
 
-                        HAConnection.this.haService.getWaitNotifyObject().allWaitForRunning(100);
+                        HAConnection.this.haService.getWaitNotifyObject().allWaitForRunning(100);//等待100m
                     }
                 } catch (Exception e) {
 
@@ -328,7 +328,7 @@ public class HAConnection {
         private boolean transferData() throws Exception {
             int writeSizeZeroTimes = 0;
             // Write Header
-            while (this.byteBufferHeader.hasRemaining()) {
+            while (this.byteBufferHeader.hasRemaining()) {//写入buffer
                 int writeSize = this.socketChannel.write(this.byteBufferHeader);
                 if (writeSize > 0) {
                     writeSizeZeroTimes = 0;
@@ -368,7 +368,7 @@ public class HAConnection {
             boolean result = !this.byteBufferHeader.hasRemaining() && !this.selectMappedBufferResult.getByteBuffer().hasRemaining();
 
             if (!this.selectMappedBufferResult.getByteBuffer().hasRemaining()) {
-                this.selectMappedBufferResult.release();
+                this.selectMappedBufferResult.release();//释放
                 this.selectMappedBufferResult = null;
             }
 

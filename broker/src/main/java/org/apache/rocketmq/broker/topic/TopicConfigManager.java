@@ -47,8 +47,8 @@ public class TopicConfigManager extends ConfigManager {
 
     private final ConcurrentMap<String, TopicConfig> topicConfigTable =
         new ConcurrentHashMap<String, TopicConfig>(1024);
-    private final DataVersion dataVersion = new DataVersion();
-    private final Set<String> systemTopicList = new HashSet<String>();
+    private final DataVersion dataVersion = new DataVersion();//版本
+    private final Set<String> systemTopicList = new HashSet<String>();//系统topic
     private transient BrokerController brokerController;
 
     public TopicConfigManager() {
@@ -67,7 +67,7 @@ public class TopicConfigManager extends ConfigManager {
         }
         {
             // MixAll.DEFAULT_TOPIC
-            if (this.brokerController.getBrokerConfig().isAutoCreateTopicEnable()) {
+            if (this.brokerController.getBrokerConfig().isAutoCreateTopicEnable()) {//自动创建话题
                 String topic = MixAll.DEFAULT_TOPIC;
                 TopicConfig topicConfig = new TopicConfig(topic);
                 this.systemTopicList.add(topic);
@@ -141,7 +141,7 @@ public class TopicConfigManager extends ConfigManager {
     public TopicConfig selectTopicConfig(final String topic) {
         return this.topicConfigTable.get(topic);
     }
-
+    /**在send方法发送过程中创建topic*/
     public TopicConfig createTopicInSendMessageMethod(final String topic, final String defaultTopic,
         final String remoteAddress, final int clientDefaultTopicQueueNums, final int topicSysFlag) {
         TopicConfig topicConfig = null;
@@ -153,16 +153,16 @@ public class TopicConfigManager extends ConfigManager {
                     topicConfig = this.topicConfigTable.get(topic);
                     if (topicConfig != null)
                         return topicConfig;
-
+                    //如果不存在topic的配置
                     TopicConfig defaultTopicConfig = this.topicConfigTable.get(defaultTopic);
                     if (defaultTopicConfig != null) {
                         if (defaultTopic.equals(MixAll.DEFAULT_TOPIC)) {
-                            if (!this.brokerController.getBrokerConfig().isAutoCreateTopicEnable()) {
-                                defaultTopicConfig.setPerm(PermName.PERM_READ | PermName.PERM_WRITE);
+                            if (!this.brokerController.getBrokerConfig().isAutoCreateTopicEnable()) {//不允许自动创建话题
+                                defaultTopicConfig.setPerm(PermName.PERM_READ | PermName.PERM_WRITE);//只有读写,不允许继承
                             }
                         }
 
-                        if (PermName.isInherited(defaultTopicConfig.getPerm())) {
+                        if (PermName.isInherited(defaultTopicConfig.getPerm())) {//从默认topic继承
                             topicConfig = new TopicConfig(topic);
 
                             int queueNums =
@@ -189,7 +189,7 @@ public class TopicConfigManager extends ConfigManager {
                             defaultTopic, remoteAddress);
                     }
 
-                    if (topicConfig != null) {
+                    if (topicConfig != null) {//从默认topic中创建了当前topic
                         log.info("Create new topic by default topic:[{}] config:[{}] producer:[{}]",
                             defaultTopic, topicConfig, remoteAddress);
 
@@ -209,7 +209,7 @@ public class TopicConfigManager extends ConfigManager {
             log.error("createTopicInSendMessageMethod exception", e);
         }
 
-        if (createNew) {
+        if (createNew) {//将topic注册到 namesrv
             this.brokerController.registerBrokerAll(false, true);
         }
 
@@ -302,7 +302,7 @@ public class TopicConfigManager extends ConfigManager {
             this.brokerController.registerBrokerAll(false, true);
         }
     }
-
+    /**更新topic配置*/
     public void updateTopicConfig(final TopicConfig topicConfig) {
         TopicConfig old = this.topicConfigTable.put(topicConfig.getTopicName(), topicConfig);
         if (old != null) {
@@ -368,7 +368,7 @@ public class TopicConfigManager extends ConfigManager {
             log.warn("delete topic config failed, topic: {} not exists", topic);
         }
     }
-
+    /**序列化所有topic配置*/
     public TopicConfigSerializeWrapper buildTopicConfigSerializeWrapper() {
         TopicConfigSerializeWrapper topicConfigSerializeWrapper = new TopicConfigSerializeWrapper();
         topicConfigSerializeWrapper.setTopicConfigTable(this.topicConfigTable);
@@ -384,7 +384,7 @@ public class TopicConfigManager extends ConfigManager {
     @Override
     public String configFilePath() {
         return BrokerPathConfigHelper.getTopicConfigPath(this.brokerController.getMessageStoreConfig()
-            .getStorePathRootDir());
+            .getStorePathRootDir());//获取配置文件
     }
 
     @Override

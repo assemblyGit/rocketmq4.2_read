@@ -21,13 +21,13 @@ import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.remoting.common.RemotingUtil;
 import org.apache.rocketmq.remoting.netty.TlsSystemConfig;
 
-/**
+/**     <p>client 通用配置</p>
  * Client Common configuration
  */
 public class ClientConfig {
     public static final String SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY = "com.rocketmq.sendMessageWithVIPChannel";
     private String namesrvAddr = System.getProperty(MixAll.NAMESRV_ADDR_PROPERTY, System.getenv(MixAll.NAMESRV_ADDR_ENV));
-    private String clientIP = RemotingUtil.getLocalAddress();
+    private String clientIP = RemotingUtil.getLocalAddress();//本地地址
     private String instanceName = System.getProperty("rocketmq.client.name", "DEFAULT");
     private int clientCallbackExecutorThreads = Runtime.getRuntime().availableProcessors();
     /**
@@ -47,13 +47,13 @@ public class ClientConfig {
     private boolean vipChannelEnabled = Boolean.parseBoolean(System.getProperty(SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY, "true"));
 
     private boolean useTLS = TlsSystemConfig.tlsEnable;
-
+    /**构建mq client id*/
     public String buildMQClientId() {
         StringBuilder sb = new StringBuilder();
-        sb.append(this.getClientIP());
+        sb.append(this.getClientIP());//ip
 
         sb.append("@");
-        sb.append(this.getInstanceName());
+        sb.append(this.getInstanceName());//实例名
         if (!UtilAll.isBlank(this.unitName)) {
             sb.append("@");
             sb.append(this.unitName);
@@ -77,13 +77,13 @@ public class ClientConfig {
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
     }
-
+    /**将实例名改为pid*/
     public void changeInstanceNameToPID() {
         if (this.instanceName.equals("DEFAULT")) {
             this.instanceName = String.valueOf(UtilAll.getPid());
         }
     }
-
+    /**重置这些属性后,确保内部producer使用的是同一个client*/
     public void resetClientConfig(final ClientConfig cc) {
         this.namesrvAddr = cc.namesrvAddr;
         this.clientIP = cc.clientIP;

@@ -33,7 +33,7 @@ public class TransientStorePool {
 
     private final int poolSize;
     private final int fileSize;
-    private final Deque<ByteBuffer> availableBuffers;
+    private final Deque<ByteBuffer> availableBuffers;//可用的缓冲
     private final MessageStoreConfig storeConfig;
 
     public TransientStorePool(final MessageStoreConfig storeConfig) {
@@ -51,7 +51,7 @@ public class TransientStorePool {
             ByteBuffer byteBuffer = ByteBuffer.allocateDirect(fileSize);
 
             final long address = ((DirectBuffer) byteBuffer).address();
-            Pointer pointer = new Pointer(address);
+            Pointer pointer = new Pointer(address);//指针
             LibC.INSTANCE.mlock(pointer, new NativeLong(fileSize));
 
             availableBuffers.offer(byteBuffer);

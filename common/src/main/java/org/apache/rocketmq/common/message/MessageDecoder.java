@@ -315,8 +315,8 @@ public class MessageDecoder {
 
             // 15 BODY
             int bodyLen = byteBuffer.getInt();
-            if (bodyLen > 0) {
-                if (readBody) {
+            if (bodyLen > 0) {//body长度
+                if (readBody) {//如果需要读取body
                     byte[] body = new byte[bodyLen];
                     byteBuffer.get(body);
 

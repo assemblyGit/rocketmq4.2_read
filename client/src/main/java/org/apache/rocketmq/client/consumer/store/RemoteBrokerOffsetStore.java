@@ -82,13 +82,13 @@ public class RemoteBrokerOffsetStore implements OffsetStore {
                     AtomicLong offset = this.offsetTable.get(mq);
                     if (offset != null) {
                         return offset.get();
-                    } else if (ReadOffsetType.READ_FROM_MEMORY == type) {
+                    } else if (ReadOffsetType.READ_FROM_MEMORY == type) {//从内存读取
                         return -1;
                     }
                 }
                 case READ_FROM_STORE: {
                     try {
-                        long brokerOffset = this.fetchConsumeOffsetFromBroker(mq);
+                        long brokerOffset = this.fetchConsumeOffsetFromBroker(mq);//从broker获取偏移
                         AtomicLong offset = new AtomicLong(brokerOffset);
                         this.updateOffset(mq, offset.get(), false);
                         return brokerOffset;
@@ -153,7 +153,7 @@ public class RemoteBrokerOffsetStore implements OffsetStore {
         AtomicLong offset = this.offsetTable.get(mq);
         if (offset != null) {
             try {
-                this.updateConsumeOffsetToBroker(mq, offset.get());
+                this.updateConsumeOffsetToBroker(mq, offset.get());//更新偏移到broker
                 log.info("[persist] Group: {} ClientId: {} updateConsumeOffsetToBroker {} {}",
                     this.groupName,
                     this.mQClientFactory.getClientId(),
@@ -209,7 +209,7 @@ public class RemoteBrokerOffsetStore implements OffsetStore {
             findBrokerResult = this.mQClientFactory.findBrokerAddressInAdmin(mq.getBrokerName());
         }
 
-        if (findBrokerResult != null) {
+        if (findBrokerResult != null) {//更新消费者偏移
             UpdateConsumerOffsetRequestHeader requestHeader = new UpdateConsumerOffsetRequestHeader();
             requestHeader.setTopic(mq.getTopic());
             requestHeader.setConsumerGroup(this.groupName);

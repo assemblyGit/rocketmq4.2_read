@@ -17,7 +17,7 @@
 package org.apache.rocketmq.client.producer;
 
 import org.apache.rocketmq.common.message.Message;
-
+/**局部事务执行*/
 public interface LocalTransactionExecuter {
     LocalTransactionState executeLocalTransactionBranch(final Message msg, final Object arg);
 }

@@ -181,12 +181,12 @@ public class DefaultMQPullConsumerImpl implements MQConsumerInner {
 
         this.subscriptionAutomatically(mq.getTopic());
 
-        int sysFlag = PullSysFlag.buildSysFlag(false, block, true, false);
+        int sysFlag = PullSysFlag.buildSysFlag(false, block, true, false);//订阅标志为true
 
         SubscriptionData subscriptionData;
         try {
             subscriptionData = FilterAPI.buildSubscriptionData(this.defaultMQPullConsumer.getConsumerGroup(),
-                mq.getTopic(), subExpression);
+                mq.getTopic(), subExpression);//构建订阅数据
         } catch (Exception e) {
             throw new MQClientException("parse subscription error", e);
         }
@@ -326,7 +326,7 @@ public class DefaultMQPullConsumerImpl implements MQConsumerInner {
     public void updateTopicSubscribeInfo(String topic, Set<MessageQueue> info) {
         Map<String, SubscriptionData> subTable = this.rebalanceImpl.getSubscriptionInner();
         if (subTable != null) {
-            if (subTable.containsKey(topic)) {
+            if (subTable.containsKey(topic)) {//如果包含该订阅信息
                 this.rebalanceImpl.getTopicSubscribeInfoTable().put(topic, info);
             }
         }
@@ -556,10 +556,10 @@ public class DefaultMQPullConsumerImpl implements MQConsumerInner {
                     this.defaultMQPullConsumer.getConsumerGroup(), isUnitMode());
                 this.pullAPIWrapper.registerFilterMessageHook(filterMessageHookList);
 
-                if (this.defaultMQPullConsumer.getOffsetStore() != null) {
+                if (this.defaultMQPullConsumer.getOffsetStore() != null) {//如果存在偏移存储
                     this.offsetStore = this.defaultMQPullConsumer.getOffsetStore();
                 } else {
-                    switch (this.defaultMQPullConsumer.getMessageModel()) {
+                    switch (this.defaultMQPullConsumer.getMessageModel()) {//判断消息模式
                         case BROADCASTING:
                             this.offsetStore = new LocalFileOffsetStore(this.mQClientFactory, this.defaultMQPullConsumer.getConsumerGroup());
                             break;
@@ -569,7 +569,7 @@ public class DefaultMQPullConsumerImpl implements MQConsumerInner {
                         default:
                             break;
                     }
-                    this.defaultMQPullConsumer.setOffsetStore(this.offsetStore);
+                    this.defaultMQPullConsumer.setOffsetStore(this.offsetStore);//设置offset偏移
                 }
 
                 this.offsetStore.load();
@@ -613,7 +613,7 @@ public class DefaultMQPullConsumerImpl implements MQConsumerInner {
         }
 
         // consumerGroup
-        if (this.defaultMQPullConsumer.getConsumerGroup().equals(MixAll.DEFAULT_CONSUMER_GROUP)) {
+        if (this.defaultMQPullConsumer.getConsumerGroup().equals(MixAll.DEFAULT_CONSUMER_GROUP)) {//默认消费者
             throw new MQClientException(
                 "consumerGroup can not equal "
                     + MixAll.DEFAULT_CONSUMER_GROUP
@@ -623,7 +623,7 @@ public class DefaultMQPullConsumerImpl implements MQConsumerInner {
         }
 
         // messageModel
-        if (null == this.defaultMQPullConsumer.getMessageModel()) {
+        if (null == this.defaultMQPullConsumer.getMessageModel()) {//消息模型
             throw new MQClientException(
                 "messageModel is null"
                     + FAQUrl.suggestTodo(FAQUrl.CLIENT_PARAMETER_CHECK_URL),
@@ -651,7 +651,7 @@ public class DefaultMQPullConsumerImpl implements MQConsumerInner {
         try {
             Set<String> registerTopics = this.defaultMQPullConsumer.getRegisterTopics();
             if (registerTopics != null) {
-                for (final String topic : registerTopics) {
+                for (final String topic : registerTopics) {//获取订阅信息
                     SubscriptionData subscriptionData = FilterAPI.buildSubscriptionData(this.defaultMQPullConsumer.getConsumerGroup(),
                         topic, SubscriptionData.SUB_ALL);
                     this.rebalanceImpl.getSubscriptionInner().put(topic, subscriptionData);

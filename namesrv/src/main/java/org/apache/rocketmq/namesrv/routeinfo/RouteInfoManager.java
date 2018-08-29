@@ -49,9 +49,9 @@ public class RouteInfoManager {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
     private final static long BROKER_CHANNEL_EXPIRED_TIME = 1000 * 60 * 2;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
-    private final HashMap<String/* topic */, List<QueueData>> topicQueueTable;
-    private final HashMap<String/* brokerName */, BrokerData> brokerAddrTable;
-    private final HashMap<String/* clusterName */, Set<String/* brokerName */>> clusterAddrTable;
+    private final HashMap<String/* topic */, List<QueueData>> topicQueueTable;//topic对应的Queue
+    private final HashMap<String/* brokerName */, BrokerData> brokerAddrTable;//brokerName到BrokerData的映射
+    private final HashMap<String/* clusterName */, Set<String/* brokerName */>> clusterAddrTable;//集群名到brokerName集合的映射
     private final HashMap<String/* brokerAddr */, BrokerLiveInfo> brokerLiveTable;
     private final HashMap<String/* brokerAddr */, List<String>/* Filter Server */> filterServerTable;
 
@@ -108,7 +108,7 @@ public class RouteInfoManager {
         final TopicConfigSerializeWrapper topicConfigWrapper,
         final List<String> filterServerList,
         final Channel channel) {
-        RegisterBrokerResult result = new RegisterBrokerResult();
+        RegisterBrokerResult result = new RegisterBrokerResult();//
         try {
             try {
                 this.lock.writeLock().lockInterruptibly();
@@ -120,20 +120,20 @@ public class RouteInfoManager {
                 }
                 brokerNames.add(brokerName);
 
-                boolean registerFirst = false;
+                boolean registerFirst = false;    //判断是否首次注册
 
                 BrokerData brokerData = this.brokerAddrTable.get(brokerName);
                 if (null == brokerData) {
-                    registerFirst = true;
+                    registerFirst = true;//首次注册
                     brokerData = new BrokerData(clusterName, brokerName, new HashMap<Long, String>());
                     this.brokerAddrTable.put(brokerName, brokerData);
                 }
                 String oldAddr = brokerData.getBrokerAddrs().put(brokerId, brokerAddr);
-                registerFirst = registerFirst || (null == oldAddr);
+                registerFirst = registerFirst || (null == oldAddr);//不存在id对应的地址
 
                 if (null != topicConfigWrapper
-                    && MixAll.MASTER_ID == brokerId) {
-                    if (this.isBrokerTopicConfigChanged(brokerAddr, topicConfigWrapper.getDataVersion())
+                    && MixAll.MASTER_ID == brokerId) {//如果是master id
+                    if (this.isBrokerTopicConfigChanged(brokerAddr, topicConfigWrapper.getDataVersion())//如果broker的topic配置发生变化,或者首次注册
                         || registerFirst) {
                         ConcurrentMap<String, TopicConfig> tcTable =
                             topicConfigWrapper.getTopicConfigTable();
@@ -191,10 +191,10 @@ public class RouteInfoManager {
 
         return false;
     }
-
+    /**创建或者更新QueueData*/
     private void createAndUpdateQueueData(final String brokerName, final TopicConfig topicConfig) {
         QueueData queueData = new QueueData();
-        queueData.setBrokerName(brokerName);
+        queueData.setBrokerName(brokerName);//不同的broker对相同的topic都存在queue
         queueData.setWriteQueueNums(topicConfig.getWriteQueueNums());
         queueData.setReadQueueNums(topicConfig.getReadQueueNums());
         queueData.setPerm(topicConfig.getPerm());
@@ -213,7 +213,7 @@ public class RouteInfoManager {
             while (it.hasNext()) {
                 QueueData qd = it.next();
                 if (qd.getBrokerName().equals(brokerName)) {
-                    if (qd.equals(queueData)) {
+                    if (qd.equals(queueData)) {//如果两个queueData完全相等
                         addNewOne = false;
                     } else {
                         log.info("topic changed, {} OLD: {} NEW: {}", topicConfig.getTopicName(), qd,
@@ -371,7 +371,7 @@ public class RouteInfoManager {
                     Iterator<QueueData> it = queueDataList.iterator();
                     while (it.hasNext()) {
                         QueueData qd = it.next();
-                        brokerNameSet.add(qd.getBrokerName());
+                        brokerNameSet.add(qd.getBrokerName());//queue的brokerName
                     }
 
                     for (String brokerName : brokerNameSet) {
@@ -419,7 +419,7 @@ public class RouteInfoManager {
             }
         }
     }
-
+    /**如果broker的channel发生变化*/
     public void onChannelDestroy(String remoteAddr, Channel channel) {
         String brokerAddrFound = null;
         if (channel != null) {
@@ -731,7 +731,7 @@ public class RouteInfoManager {
         return topicList.encode();
     }
 }
-
+/**Broker信息*/
 class BrokerLiveInfo {
     private long lastUpdateTimestamp;
     private DataVersion dataVersion;

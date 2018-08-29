@@ -74,7 +74,7 @@ public class ProducerManager {
                             final ClientChannelInfo info = item.getValue();
 
                             long diff = System.currentTimeMillis() - info.getLastUpdateTimestamp();
-                            if (diff > CHANNEL_EXPIRED_TIMEOUT) {
+                            if (diff > CHANNEL_EXPIRED_TIMEOUT) {//渠道最大超时时间
                                 it.remove();
                                 log.warn(
                                     "SCAN: remove expired channel[{}] from ProducerManager groupChannelTable, producer group name: {}",

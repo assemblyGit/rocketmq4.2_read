@@ -282,11 +282,11 @@ public class DefaultRequestProcessor implements NettyRequestProcessor {
         TopicRouteData topicRouteData = this.namesrvController.getRouteInfoManager().pickupTopicRouteData(requestHeader.getTopic());
 
         if (topicRouteData != null) {
-            if (this.namesrvController.getNamesrvConfig().isOrderMessageEnable()) {
+            if (this.namesrvController.getNamesrvConfig().isOrderMessageEnable()) {//如果启用了顺序消息
                 String orderTopicConf =
                     this.namesrvController.getKvConfigManager().getKVConfig(NamesrvUtil.NAMESPACE_ORDER_TOPIC_CONFIG,
                         requestHeader.getTopic());
-                topicRouteData.setOrderTopicConf(orderTopicConf);
+                topicRouteData.setOrderTopicConf(orderTopicConf);//设置顺序话题配置
             }
 
             byte[] content = topicRouteData.encode();
@@ -471,7 +471,7 @@ public class DefaultRequestProcessor implements NettyRequestProcessor {
                 return response;
             }
 
-            this.namesrvController.getConfiguration().update(properties);
+            this.namesrvController.getConfiguration().update(properties);//更新属性文件
         }
 
         response.setCode(ResponseCode.SUCCESS);

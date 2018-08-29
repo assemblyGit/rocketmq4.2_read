@@ -52,7 +52,7 @@ public class IndexFile {
         ByteBuffer byteBuffer = this.mappedByteBuffer.slice();
         this.indexHeader = new IndexHeader(byteBuffer);
 
-        if (endPhyOffset > 0) {
+        if (endPhyOffset > 0) {//索引文件开始的物理偏移
             this.indexHeader.setBeginPhyOffset(endPhyOffset);
             this.indexHeader.setEndPhyOffset(endPhyOffset);
         }
@@ -80,7 +80,7 @@ public class IndexFile {
             log.info("flush index file eclipse time(ms) " + (System.currentTimeMillis() - beginTime));
         }
     }
-
+    /**索引已经写满*/
     public boolean isWriteFull() {
         return this.indexHeader.getIndexCount() >= this.indexNum;
     }
@@ -88,12 +88,12 @@ public class IndexFile {
     public boolean destroy(final long intervalForcibly) {
         return this.mappedFile.destroy(intervalForcibly);
     }
-
+    /**存放索引*/
     public boolean putKey(final String key, final long phyOffset, final long storeTimestamp) {
-        if (this.indexHeader.getIndexCount() < this.indexNum) {
-            int keyHash = indexKeyHashMethod(key);
-            int slotPos = keyHash % this.hashSlotNum;
-            int absSlotPos = IndexHeader.INDEX_HEADER_SIZE + slotPos * hashSlotSize;
+        if (this.indexHeader.getIndexCount() < this.indexNum) {//小于当前索引文件的索引数量
+            int keyHash = indexKeyHashMethod(key);//hash
+            int slotPos = keyHash % this.hashSlotNum;//槽
+            int absSlotPos = IndexHeader.INDEX_HEADER_SIZE + slotPos * hashSlotSize;//槽的物理位置
 
             FileLock fileLock = null;
 
@@ -101,8 +101,8 @@ public class IndexFile {
 
                 // fileLock = this.fileChannel.lock(absSlotPos, hashSlotSize,
                 // false);
-                int slotValue = this.mappedByteBuffer.getInt(absSlotPos);
-                if (slotValue <= invalidIndex || slotValue > this.indexHeader.getIndexCount()) {
+                int slotValue = this.mappedByteBuffer.getInt(absSlotPos);//槽的具体位置
+                if (slotValue <= invalidIndex || slotValue > this.indexHeader.getIndexCount()) {//槽位置存放第一个桶上连接的第一个位置
                     slotValue = invalidIndex;
                 }
 
@@ -120,16 +120,16 @@ public class IndexFile {
 
                 int absIndexPos =
                     IndexHeader.INDEX_HEADER_SIZE + this.hashSlotNum * hashSlotSize
-                        + this.indexHeader.getIndexCount() * indexSize;
+                        + this.indexHeader.getIndexCount() * indexSize;//具体索引位置
 
                 this.mappedByteBuffer.putInt(absIndexPos, keyHash);
-                this.mappedByteBuffer.putLong(absIndexPos + 4, phyOffset);
+                this.mappedByteBuffer.putLong(absIndexPos + 4, phyOffset);//物理偏移
                 this.mappedByteBuffer.putInt(absIndexPos + 4 + 8, (int) timeDiff);
-                this.mappedByteBuffer.putInt(absIndexPos + 4 + 8 + 4, slotValue);
+                this.mappedByteBuffer.putInt(absIndexPos + 4 + 8 + 4, slotValue);//桶冲突连接到前一个
 
-                this.mappedByteBuffer.putInt(absSlotPos, this.indexHeader.getIndexCount());
+                this.mappedByteBuffer.putInt(absSlotPos, this.indexHeader.getIndexCount());//在槽的位置,映射为哪个index
 
-                if (this.indexHeader.getIndexCount() <= 1) {
+                if (this.indexHeader.getIndexCount() <= 1) {//如果是第一个索引
                     this.indexHeader.setBeginPhyOffset(phyOffset);
                     this.indexHeader.setBeginTimestamp(storeTimestamp);
                 }

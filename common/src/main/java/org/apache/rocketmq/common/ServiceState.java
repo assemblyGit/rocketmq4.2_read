@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 package org.apache.rocketmq.common;
-
+/**状态*/
 public enum ServiceState {
     /**
      * Service just created,not start

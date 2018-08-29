@@ -75,14 +75,14 @@ public interface MessageStore {
      * @param topic Topic to query.
      * @param queueId Queue ID to query.
      * @param offset Logical offset to start from.
-     * @param maxMsgNums Maximum count of messages to query.
+     * @param maxMsgNums Maximum count of messages to query.    一次查询最大消息数
      * @param messageFilter Message filter used to screen desired messages.
      * @return Matched messages.
      */
     GetMessageResult getMessage(final String group, final String topic, final int queueId,
         final long offset, final int maxMsgNums, final MessageFilter messageFilter);
 
-    /**
+    /**    <p>topic queue 获取最大偏移</p>
      * Get maximum offset of the topic queue.
      *
      * @param topic Topic name.
@@ -124,7 +124,7 @@ public interface MessageStore {
      * Look up the message by given commit log offset.
      *
      * @param commitLogOffset physical offset.
-     * @return Message whose physical offset is as specified.
+     * @return Message whose physical offset is as specified.     物理偏移
      */
     MessageExt lookMessageByOffset(final long commitLogOffset);
 

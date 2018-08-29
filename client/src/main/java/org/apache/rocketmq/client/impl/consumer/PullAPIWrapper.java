@@ -72,16 +72,16 @@ public class PullAPIWrapper {
         PullResultExt pullResultExt = (PullResultExt) pullResult;
 
         this.updatePullFromWhichNode(mq, pullResultExt.getSuggestWhichBrokerId());
-        if (PullStatus.FOUND == pullResult.getPullStatus()) {
+        if (PullStatus.FOUND == pullResult.getPullStatus()) {//
             ByteBuffer byteBuffer = ByteBuffer.wrap(pullResultExt.getMessageBinary());
-            List<MessageExt> msgList = MessageDecoder.decodes(byteBuffer);
+            List<MessageExt> msgList = MessageDecoder.decodes(byteBuffer);//解码消息
 
             List<MessageExt> msgListFilterAgain = msgList;
             if (!subscriptionData.getTagsSet().isEmpty() && !subscriptionData.isClassFilterMode()) {
                 msgListFilterAgain = new ArrayList<MessageExt>(msgList.size());
                 for (MessageExt msg : msgList) {
                     if (msg.getTags() != null) {
-                        if (subscriptionData.getTagsSet().contains(msg.getTags())) {
+                        if (subscriptionData.getTagsSet().contains(msg.getTags())) {//在订阅的tag中
                             msgListFilterAgain.add(msg);
                         }
                     }
@@ -109,7 +109,7 @@ public class PullAPIWrapper {
 
         return pullResult;
     }
-
+    /**设置从哪个节点pull*/
     public void updatePullFromWhichNode(final MessageQueue mq, final long brokerId) {
         AtomicLong suggest = this.pullFromWhichNodeTable.get(mq);
         if (null == suggest) {
@@ -170,7 +170,7 @@ public class PullAPIWrapper {
             }
             int sysFlagInner = sysFlag;
 
-            if (findBrokerResult.isSlave()) {
+            if (findBrokerResult.isSlave()) {//如果是slave
                 sysFlagInner = PullSysFlag.clearCommitOffsetFlag(sysFlagInner);
             }
 
@@ -189,7 +189,7 @@ public class PullAPIWrapper {
 
             String brokerAddr = findBrokerResult.getBrokerAddr();
             if (PullSysFlag.hasClassFilterFlag(sysFlagInner)) {
-                brokerAddr = computPullFromWhichFilterServer(mq.getTopic(), brokerAddr);
+                brokerAddr = computPullFromWhichFilterServer(mq.getTopic(), brokerAddr);//从filter server 获取
             }
 
             PullResult pullResult = this.mQClientFactory.getMQClientAPIImpl().pullMessage(

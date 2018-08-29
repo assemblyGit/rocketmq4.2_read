@@ -85,8 +85,8 @@ public class RebalancePushImpl extends RebalanceImpl {
     public boolean removeUnnecessaryMessageQueue(MessageQueue mq, ProcessQueue pq) {
         this.defaultMQPushConsumerImpl.getOffsetStore().persist(mq);
         this.defaultMQPushConsumerImpl.getOffsetStore().removeOffset(mq);
-        if (this.defaultMQPushConsumerImpl.isConsumeOrderly()
-            && MessageModel.CLUSTERING.equals(this.defaultMQPushConsumerImpl.messageModel())) {
+        if (this.defaultMQPushConsumerImpl.isConsumeOrderly()//如果顺序消费
+            && MessageModel.CLUSTERING.equals(this.defaultMQPushConsumerImpl.messageModel())) {//如果是集群模式,在移除非必要的queue时需要解除锁定
             try {
                 if (pq.getLockConsume().tryLock(1000, TimeUnit.MILLISECONDS)) {
                     try {
@@ -109,10 +109,10 @@ public class RebalancePushImpl extends RebalanceImpl {
         }
         return true;
     }
-
+    /***/
     private boolean unlockDelay(final MessageQueue mq, final ProcessQueue pq) {
 
-        if (pq.hasTempMessage()) {
+        if (pq.hasTempMessage()) {//如果存在临时消息
             log.info("[{}]unlockDelay, begin {} ", mq.hashCode(), mq);
             this.defaultMQPushConsumerImpl.getmQClientFactory().getScheduledExecutorService().schedule(new Runnable() {
                 @Override
@@ -122,7 +122,7 @@ public class RebalancePushImpl extends RebalanceImpl {
                 }
             }, UNLOCK_DELAY_TIME_MILLS, TimeUnit.MILLISECONDS);
         } else {
-            this.unlock(mq, true);
+            this.unlock(mq, true);//解锁nq
         }
         return true;
     }
@@ -140,24 +140,24 @@ public class RebalancePushImpl extends RebalanceImpl {
     @Override
     public long computePullFromWhere(MessageQueue mq) {
         long result = -1;
-        final ConsumeFromWhere consumeFromWhere = this.defaultMQPushConsumerImpl.getDefaultMQPushConsumer().getConsumeFromWhere();
+        final ConsumeFromWhere consumeFromWhere = this.defaultMQPushConsumerImpl.getDefaultMQPushConsumer().getConsumeFromWhere();//计算重哪获取
         final OffsetStore offsetStore = this.defaultMQPushConsumerImpl.getOffsetStore();
         switch (consumeFromWhere) {
             case CONSUME_FROM_LAST_OFFSET_AND_FROM_MIN_WHEN_BOOT_FIRST:
             case CONSUME_FROM_MIN_OFFSET:
             case CONSUME_FROM_MAX_OFFSET:
-            case CONSUME_FROM_LAST_OFFSET: {
-                long lastOffset = offsetStore.readOffset(mq, ReadOffsetType.READ_FROM_STORE);
+            case CONSUME_FROM_LAST_OFFSET: {//如果从最后的偏移读取
+                long lastOffset = offsetStore.readOffset(mq, ReadOffsetType.READ_FROM_STORE);//从存储中读取
                 if (lastOffset >= 0) {
                     result = lastOffset;
                 }
                 // First start,no offset
                 else if (-1 == lastOffset) {
-                    if (mq.getTopic().startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) {
+                    if (mq.getTopic().startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) {//如果是重试主题
                         result = 0L;
                     } else {
                         try {
-                            result = this.mQClientFactory.getMQAdminImpl().maxOffset(mq);
+                            result = this.mQClientFactory.getMQAdminImpl().maxOffset(mq);//获取队列的最大偏移
                         } catch (MQClientException e) {
                             result = -1;
                         }
@@ -167,7 +167,7 @@ public class RebalancePushImpl extends RebalanceImpl {
                 }
                 break;
             }
-            case CONSUME_FROM_FIRST_OFFSET: {
+            case CONSUME_FROM_FIRST_OFFSET: {//从第一个读取
                 long lastOffset = offsetStore.readOffset(mq, ReadOffsetType.READ_FROM_STORE);
                 if (lastOffset >= 0) {
                     result = lastOffset;

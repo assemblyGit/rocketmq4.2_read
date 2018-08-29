@@ -155,7 +155,7 @@ public class RocketMQSerializable {
         }
 
         // HashMap<String, String> extFields
-        int extFieldsLength = headerBuffer.getInt();
+        int extFieldsLength = headerBuffer.getInt();//extField对
         if (extFieldsLength > 0) {
             byte[] extFieldsBytes = new byte[extFieldsLength];
             headerBuffer.get(extFieldsBytes);

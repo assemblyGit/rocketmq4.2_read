@@ -29,7 +29,7 @@ public abstract class ServiceThread implements Runnable {
 
     protected final Thread thread;
     protected final CountDownLatch2 waitPoint = new CountDownLatch2(1);
-    protected volatile AtomicBoolean hasNotified = new AtomicBoolean(false);
+    protected volatile AtomicBoolean hasNotified = new AtomicBoolean(false);//是否已经被唤醒
     protected volatile boolean stopped = false;
 
     public ServiceThread() {
@@ -98,26 +98,26 @@ public abstract class ServiceThread implements Runnable {
     }
 
     public void wakeup() {
-        if (hasNotified.compareAndSet(false, true)) {
+        if (hasNotified.compareAndSet(false, true)) {//设置为已通知
             waitPoint.countDown(); // notify
         }
     }
 
     protected void waitForRunning(long interval) {
-        if (hasNotified.compareAndSet(true, false)) {
+        if (hasNotified.compareAndSet(true, false)) {//如果已经是已通知
             this.onWaitEnd();
             return;
         }
 
         //entry to wait
-        waitPoint.reset();
+        waitPoint.reset(); //重置
 
         try {
             waitPoint.await(interval, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             log.error("Interrupted", e);
         } finally {
-            hasNotified.set(false);
+            hasNotified.set(false);//下次等待唤醒过程
             this.onWaitEnd();
         }
     }

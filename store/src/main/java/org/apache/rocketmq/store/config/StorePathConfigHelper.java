@@ -19,7 +19,7 @@ package org.apache.rocketmq.store.config;
 import java.io.File;
 
 public class StorePathConfigHelper {
-
+    /**消费者队列*/
     public static String getStorePathConsumeQueue(final String rootDir) {
         return rootDir + File.separator + "consumequeue";
     }
@@ -31,11 +31,11 @@ public class StorePathConfigHelper {
     public static String getStorePathIndex(final String rootDir) {
         return rootDir + File.separator + "index";
     }
-
+    /**检查点文件*/
     public static String getStoreCheckpoint(final String rootDir) {
         return rootDir + File.separator + "checkpoint";
     }
-
+    /**异常退出文件*/
     public static String getAbortFile(final String rootDir) {
         return rootDir + File.separator + "abort";
     }

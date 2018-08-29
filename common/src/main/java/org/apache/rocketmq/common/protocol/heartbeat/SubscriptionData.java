@@ -23,16 +23,16 @@ package org.apache.rocketmq.common.protocol.heartbeat;
 import com.alibaba.fastjson.annotation.JSONField;
 import java.util.HashSet;
 import java.util.Set;
-
+/**订阅信息*/
 public class SubscriptionData implements Comparable<SubscriptionData> {
     public final static String SUB_ALL = "*";
     private boolean classFilterMode = false;
     private String topic;
     private String subString;
     private Set<String> tagsSet = new HashSet<String>();
-    private Set<Integer> codeSet = new HashSet<Integer>();
+    private Set<Integer> codeSet = new HashSet<Integer>();//tagsSet对应的hash
     private long subVersion = System.currentTimeMillis();
-    private String expressionType;
+    private String expressionType;//表达式类型
 
     @JSONField(serialize = false)
     private String filterClassSource;

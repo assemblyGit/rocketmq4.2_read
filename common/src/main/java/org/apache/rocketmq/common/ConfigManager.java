@@ -35,7 +35,7 @@ public abstract class ConfigManager {
             if (null == jsonString || jsonString.length() == 0) {
                 return this.loadBak();
             } else {
-                this.decode(jsonString);
+                this.decode(jsonString);//解码json数据
                 log.info("load {} OK", fileName);
                 return true;
             }
@@ -66,7 +66,7 @@ public abstract class ConfigManager {
     }
 
     public abstract void decode(final String jsonString);
-
+    /**持久化*/
     public synchronized void persist() {
         String jsonString = this.encode(true);
         if (jsonString != null) {

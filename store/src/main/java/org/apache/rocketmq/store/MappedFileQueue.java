@@ -37,17 +37,17 @@ public class MappedFileQueue {
 
     private final String storePath;
 
-    private final int mappedFileSize;
+    private final int mappedFileSize;//mapped文件大小
 
-    private final CopyOnWriteArrayList<MappedFile> mappedFiles = new CopyOnWriteArrayList<MappedFile>();
+    private final CopyOnWriteArrayList<MappedFile> mappedFiles = new CopyOnWriteArrayList<MappedFile>();//mapped file队列
 
     private final AllocateMappedFileService allocateMappedFileService;
 
     private long flushedWhere = 0;
     private long committedWhere = 0;
 
-    private volatile long storeTimestamp = 0;
-
+    private volatile long storeTimestamp = 0;//刷新时的时间戳
+    /***/
     public MappedFileQueue(final String storePath, int mappedFileSize,
         AllocateMappedFileService allocateMappedFileService) {
         this.storePath = storePath;
@@ -100,8 +100,8 @@ public class MappedFileQueue {
         mfs = this.mappedFiles.toArray();
         return mfs;
     }
-
-    public void truncateDirtyFiles(long offset) {
+    /**截断脏文件*/
+    public void truncateDirtyFiles(long offset) {//
         List<MappedFile> willRemoveFiles = new ArrayList<MappedFile>();
 
         for (MappedFile file : this.mappedFiles) {
@@ -143,7 +143,7 @@ public class MappedFileQueue {
             }
         }
     }
-
+    /**加载日志*/
     public boolean load() {
         File dir = new File(this.storePath);
         File[] files = dir.listFiles();
@@ -194,19 +194,19 @@ public class MappedFileQueue {
     public MappedFile getLastMappedFile(final long startOffset, boolean needCreate) {
         long createOffset = -1;
         MappedFile mappedFileLast = getLastMappedFile();
-
-        if (mappedFileLast == null) {
-            createOffset = startOffset - (startOffset % this.mappedFileSize);
+        /**如果不存在任何一个mappedfile*/
+        if (mappedFileLast == null) {//文件的offset
+            createOffset = startOffset - (startOffset % this.mappedFileSize);//文件内的偏移
         }
 
-        if (mappedFileLast != null && mappedFileLast.isFull()) {
-            createOffset = mappedFileLast.getFileFromOffset() + this.mappedFileSize;
+        if (mappedFileLast != null && mappedFileLast.isFull()) {//如果最后一个文件已满
+            createOffset = mappedFileLast.getFileFromOffset() + this.mappedFileSize;//创建文件的偏移
         }
 
-        if (createOffset != -1 && needCreate) {
-            String nextFilePath = this.storePath + File.separator + UtilAll.offset2FileName(createOffset);
+        if (createOffset != -1 && needCreate) {//如果需要创建
+            String nextFilePath = this.storePath + File.separator + UtilAll.offset2FileName(createOffset);//offset到文件名
             String nextNextFilePath = this.storePath + File.separator
-                + UtilAll.offset2FileName(createOffset + this.mappedFileSize);
+                + UtilAll.offset2FileName(createOffset + this.mappedFileSize);//下下个文件
             MappedFile mappedFile = null;
 
             if (this.allocateMappedFileService != null) {
@@ -232,7 +232,7 @@ public class MappedFileQueue {
 
         return mappedFileLast;
     }
-
+    /**如果queue中不存在任何mappedfile,以这个偏移量创建mappedfile  如果存在mappedfile,则如果最后mappedfile已满,用最后的mappedfile的起始偏移+filezie 新建mappedfile*/
     public MappedFile getLastMappedFile(final long startOffset) {
         return getLastMappedFile(startOffset, true);
     }
@@ -421,7 +421,7 @@ public class MappedFileQueue {
 
         return deleteCount;
     }
-
+    /**flushLeastPages 最少flush的页*/
     public boolean flush(final int flushLeastPages) {
         boolean result = true;
         MappedFile mappedFile = this.findMappedFileByOffset(this.flushedWhere, this.flushedWhere == 0);
@@ -463,7 +463,7 @@ public class MappedFileQueue {
         try {
             MappedFile mappedFile = this.getFirstMappedFile();
             if (mappedFile != null) {
-                int index = (int) ((offset / this.mappedFileSize) - (mappedFile.getFileFromOffset() / this.mappedFileSize));
+                int index = (int) ((offset / this.mappedFileSize) - (mappedFile.getFileFromOffset() / this.mappedFileSize));//
                 if (index < 0 || index >= this.mappedFiles.size()) {
                     LOG_ERROR.warn("Offset for {} not matched. Request offset: {}, index: {}, " +
                             "mappedFileSize: {}, mappedFiles count: {}",

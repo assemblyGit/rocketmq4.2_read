@@ -97,7 +97,7 @@ public class FiltersrvController {
         this.remotingServer
             .registerDefaultProcessor(new DefaultRequestProcessor(this), this.remotingExecutor);
     }
-
+    /**向broker注册filter server*/
     public void registerFilterServerToBroker() {
         try {
             RegisterFilterServerResponseHeader responseHeader =

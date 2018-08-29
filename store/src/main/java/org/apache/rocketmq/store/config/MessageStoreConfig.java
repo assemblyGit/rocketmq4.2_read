@@ -21,7 +21,7 @@ import org.apache.rocketmq.common.annotation.ImportantField;
 import org.apache.rocketmq.store.ConsumeQueue;
 
 public class MessageStoreConfig {
-    //The root directory in which the log data is kept
+    //The root directory in which the log data is kept    log data的根目录
     @ImportantField
     private String storePathRootDir = System.getProperty("user.home") + File.separator + "store";
 
@@ -32,14 +32,14 @@ public class MessageStoreConfig {
 
     // CommitLog file size,default is 1G
     private int mapedFileSizeCommitLog = 1024 * 1024 * 1024;
-    // ConsumeQueue file size,default is 30W
+    // ConsumeQueue file size,default is 30W    ConsumeQueue文件大小
     private int mapedFileSizeConsumeQueue = 300000 * ConsumeQueue.CQ_STORE_UNIT_SIZE;
-    // enable consume queue ext
+    // enable consume queue ext    consume queue扩展
     private boolean enableConsumeQueueExt = false;
     // ConsumeQueue extend file size, 48M
     private int mappedFileSizeConsumeQueueExt = 48 * 1024 * 1024;
     // Bit count of filter bit map.
-    // this will be set by pipe of calculate filter bit map.
+    // this will be set by pipe of calculate filter bit map.   bit map的位数量
     private int bitMapLengthConsumeQueueExt = 64;
 
     // CommitLog flush interval
@@ -106,7 +106,7 @@ public class MessageStoreConfig {
     @ImportantField
     private int maxTransferCountOnMessageInDisk = 8;
     @ImportantField
-    private int accessMessageInMemoryMaxRatio = 40;
+    private int accessMessageInMemoryMaxRatio = 40;//内存中的最大比例
     @ImportantField
     private boolean messageIndexEnable = true;
     private int maxHashSlotNum = 5000000;
