@@ -74,7 +74,7 @@ public class ExpressionMessageFilter implements MessageFilter {
                 return true;
             }
 
-            if (subscriptionData.getSubString().equals(SubscriptionData.SUB_ALL)) {
+            if (subscriptionData.getSubString().equals(SubscriptionData.SUB_ALL)) {// 如果订阅所有tag
                 return true;
             }
 
@@ -86,7 +86,7 @@ public class ExpressionMessageFilter implements MessageFilter {
                 return true;
             }
 
-            // message is before consumer
+            // message is before consumer   msg在consumerFilterData之前
             if (cqExtUnit == null || !consumerFilterData.isMsgInLive(cqExtUnit.getMsgStoreTime())) {
                 log.debug("Pull matched because not in live: {}, {}", consumerFilterData, cqExtUnit);
                 return true;

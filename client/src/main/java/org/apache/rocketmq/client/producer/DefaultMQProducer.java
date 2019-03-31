@@ -78,17 +78,17 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
      */
     private String createTopicKey = MixAll.DEFAULT_TOPIC;
 
-    /**
+    /**    <p>每个默认话题的queue number</p>
      * Number of queues to create per default topic.
      */
     private volatile int defaultTopicQueueNums = 4;
 
-    /**
+    /**    <p>发送消息超时</p>
      * Timeout for sending messages.
      */
     private int sendMsgTimeout = 3000;
 
-    /**
+    /**    <p>消息压缩的阀值</p>
      * Compress message body threshold, namely, message body larger than 4k will be compressed on default.
      */
     private int compressMsgBodyOverHowmuch = 1024 * 4;

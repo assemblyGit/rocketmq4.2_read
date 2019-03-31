@@ -67,7 +67,7 @@ public abstract class NettyRemotingAbstract {
      */
     protected final Semaphore semaphoreAsync;
 
-    /**
+    /**<p>发送请求前创建ResponseFuture,在收到响应后获取ResponseFuture,设置返回结果</p>
      * This map caches all on-going requests.
      */
     protected final ConcurrentMap<Integer /* opaque */, ResponseFuture> responseTable =
@@ -80,7 +80,7 @@ public abstract class NettyRemotingAbstract {
     protected final HashMap<Integer/* request code */, Pair<NettyRequestProcessor, ExecutorService>> processorTable =
         new HashMap<Integer, Pair<NettyRequestProcessor, ExecutorService>>(64);
 
-    /**
+    /**    执行用户定义的ChannelEventListener的Executor
      * Executor to feed netty events to user defined {@link ChannelEventListener}.
      */
     protected final NettyEventExecutor nettyEventExecutor = new NettyEventExecutor();
@@ -253,7 +253,7 @@ public abstract class NettyRemotingAbstract {
      */
     public void processResponseCommand(ChannelHandlerContext ctx, RemotingCommand cmd) {
         final int opaque = cmd.getOpaque();
-        final ResponseFuture responseFuture = responseTable.get(opaque);
+        final ResponseFuture responseFuture = responseTable.get(opaque);//
         if (responseFuture != null) {
             responseFuture.setResponseCommand(cmd);//设置远程命令
 
@@ -353,7 +353,7 @@ public abstract class NettyRemotingAbstract {
             }
         }
     }
-
+    /**同步调用*/
     public RemotingCommand invokeSyncImpl(final Channel channel, final RemotingCommand request,
         final long timeoutMillis)
         throws InterruptedException, RemotingSendRequestException, RemotingTimeoutException {
@@ -379,7 +379,7 @@ public abstract class NettyRemotingAbstract {
                     log.warn("send a request command to channel <" + addr + "> failed.");
                 }
             });
-
+            /**等待响应*/
             RemotingCommand responseCommand = responseFuture.waitResponse(timeoutMillis);//等待响应
             if (null == responseCommand) {
                 if (responseFuture.isSendRequestOK()) {

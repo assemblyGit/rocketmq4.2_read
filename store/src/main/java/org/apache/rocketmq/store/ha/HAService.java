@@ -52,7 +52,7 @@ public class HAService {
     private final DefaultMessageStore defaultMessageStore;
 
     private final WaitNotifyObject waitNotifyObject = new WaitNotifyObject();
-    private final AtomicLong push2SlaveMaxOffset = new AtomicLong(0);//push到slave的最大偏移
+    private final AtomicLong push2SlaveMaxOffset = new AtomicLong(0);//push到slave的最大偏移 slave的ack
 
     private final GroupTransferService groupTransferService;
 
@@ -65,7 +65,7 @@ public class HAService {
         this.groupTransferService = new GroupTransferService();
         this.haClient = new HAClient();
     }
-    /***/
+    /**更新master的地址*/
     public void updateMasterAddress(final String newAddr) {
         if (this.haClient != null) {
             this.haClient.updateMasterAddress(newAddr);
@@ -86,7 +86,7 @@ public class HAService {
     }
 
     public void notifyTransferSome(final long offset) {
-        for (long value = this.push2SlaveMaxOffset.get(); offset > value; ) {
+        for (long value = this.push2SlaveMaxOffset.get(); offset > value; ) {//cas
             boolean ok = this.push2SlaveMaxOffset.compareAndSet(value, offset);
             if (ok) {
                 this.groupTransferService.notifyTransferSome();
@@ -255,7 +255,7 @@ public class HAService {
         private final WaitNotifyObject notifyTransferObject = new WaitNotifyObject();
         private volatile List<CommitLog.GroupCommitRequest> requestsWrite = new ArrayList<>();
         private volatile List<CommitLog.GroupCommitRequest> requestsRead = new ArrayList<>();
-
+        /***/
         public synchronized void putRequest(final CommitLog.GroupCommitRequest request) {
             synchronized (this.requestsWrite) {
                 this.requestsWrite.add(request);//写请求
@@ -282,7 +282,7 @@ public class HAService {
                         boolean transferOK = HAService.this.push2SlaveMaxOffset.get() >= req.getNextOffset();
                         for (int i = 0; !transferOK && i < 5; i++) {//所有Slave中已成功复制的最大偏移量是否大于等于消息生产者发送消息后消息服务端返回下一条消息的起始偏移量，如果是则表示主从同步复制已经完成
                             this.notifyTransferObject.waitForRunning(1000);
-                            transferOK = HAService.this.push2SlaveMaxOffset.get() >= req.getNextOffset();
+                            transferOK = HAService.this.push2SlaveMaxOffset.get() >= req.getNextOffset();//CAS
                         }
 
                         if (!transferOK) {//传输到slave超时

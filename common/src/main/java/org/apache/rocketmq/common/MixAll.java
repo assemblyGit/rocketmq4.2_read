@@ -53,7 +53,7 @@ public class MixAll {
     public static final String NAMESRV_ADDR_PROPERTY = "rocketmq.namesrv.addr";
     public static final String MESSAGE_COMPRESS_LEVEL = "rocketmq.message.compressLevel";
     public static final String DEFAULT_NAMESRV_ADDR_LOOKUP = "jmenv.tbsite.net";
-    public static final String WS_DOMAIN_NAME = System.getProperty("rocketmq.namesrv.domain", DEFAULT_NAMESRV_ADDR_LOOKUP);
+    public static final String WS_DOMAIN_NAME = System.getProperty("rocketmq.namesrv.domain", DEFAULT_NAMESRV_ADDR_LOOKUP);//默认的地址属性名
     public static final String WS_DOMAIN_SUBGROUP = System.getProperty("rocketmq.namesrv.domain.subgroup", "nsaddr");
     //http://jmenv.tbsite.net:8080/rocketmq/nsaddr
     //public static final String WS_ADDR = "http://" + WS_DOMAIN_NAME + ":8080/rocketmq/" + WS_DOMAIN_SUBGROUP;
@@ -78,9 +78,9 @@ public class MixAll {
     public static final List<String> LOCAL_INET_ADDRESS = getLocalInetAddress();
     public static final String LOCALHOST = localhost();
     public static final String DEFAULT_CHARSET = "UTF-8";
-    public static final long MASTER_ID = 0L;
+    public static final long MASTER_ID = 0L;//主ID
     public static final long CURRENT_JVM_PID = getPID();
-
+    /**重试topic前缀*/
     public static final String RETRY_GROUP_TOPIC_PREFIX = "%RETRY%";
 
     public static final String DLQ_GROUP_TOPIC_PREFIX = "%DLQ%";
@@ -88,7 +88,7 @@ public class MixAll {
     public static final String UNIQUE_MSG_QUERY_FLAG = "_UNIQUE_KEY_QUERY";
     public static final String DEFAULT_TRACE_REGION_ID = "DefaultRegion";
     public static final String CONSUME_CONTEXT_TYPE = "ConsumeContextType";
-    /**获取ws addr*/
+    /**获取ws addr,获取namesrv的web server*/
     public static String getWSAddr() {
         String wsDomainName = System.getProperty("rocketmq.namesrv.domain", DEFAULT_NAMESRV_ADDR_LOOKUP);//默认的namesrv查找服务
         String wsDomainSubgroup = System.getProperty("rocketmq.namesrv.domain.subgroup", "nsaddr");
@@ -102,7 +102,7 @@ public class MixAll {
     public static String getRetryTopic(final String consumerGroup) {
         return RETRY_GROUP_TOPIC_PREFIX + consumerGroup;
     }
-
+    /**系统消费者组*/
     public static boolean isSysConsumerGroup(final String consumerGroup) {
         return consumerGroup.startsWith(CID_RMQ_SYS_PREFIX);
     }

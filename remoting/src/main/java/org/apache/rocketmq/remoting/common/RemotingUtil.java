@@ -112,7 +112,7 @@ public class RemotingUtil {
             }
 
             // prefer ipv4
-            if (!ipv4Result.isEmpty()) {
+            if (!ipv4Result.isEmpty()) {//非局域网地址
                 for (String ip : ipv4Result) {
                     if (ip.startsWith("127.0") || ip.startsWith("192.168")) {
                         continue;

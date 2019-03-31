@@ -45,7 +45,7 @@ import org.slf4j.Logger;
  */
 public abstract class RebalanceImpl {
     protected static final Logger log = ClientLogger.getLog();
-    protected final ConcurrentMap<MessageQueue, ProcessQueue> processQueueTable = new ConcurrentHashMap<MessageQueue, ProcessQueue>(64);
+    protected final ConcurrentMap<MessageQueue, ProcessQueue> processQueueTable = new ConcurrentHashMap<MessageQueue, ProcessQueue>(64);//message对应的处理队列
     protected final ConcurrentMap<String/* topic */, Set<MessageQueue>> topicSubscribeInfoTable =
         new ConcurrentHashMap<String, Set<MessageQueue>>();
     protected final ConcurrentMap<String /* topic */, SubscriptionData> subscriptionInner =
@@ -279,13 +279,13 @@ public abstract class RebalanceImpl {
 
                     AllocateMessageQueueStrategy strategy = this.allocateMessageQueueStrategy;//分配给当前的mq?
 
-                    List<MessageQueue> allocateResult = null;
+                    List<MessageQueue> allocateResult = null;//分配给该消费者的queue
                     try {
                         allocateResult = strategy.allocate(
                             this.consumerGroup,
                             this.mQClientFactory.getClientId(),
                             mqAll,
-                            cidAll);
+                            cidAll);//分配给该消费者的 MessageQueue列表
                     } catch (Throwable e) {
                         log.error("AllocateMessageQueueStrategy.allocate Exception. allocateMessageQueueStrategyName={}", strategy.getName(),
                             e);
@@ -298,7 +298,7 @@ public abstract class RebalanceImpl {
                     }
 
                     boolean changed = this.updateProcessQueueTableInRebalance(topic, allocateResultSet, isOrder);//allocateResultSet 已分配的结果集
-                    if (changed) {
+                    if (changed) {//如果消息队列发生改变
                         log.info(
                             "rebalanced result changed. allocateMessageQueueStrategyName={}, group={}, topic={}, clientId={}, mqAllSize={}, cidAllSize={}, rebalanceResultSize={}, rebalanceResultSet={}",
                             strategy.getName(), consumerGroup, topic, this.mQClientFactory.getClientId(), mqSet.size(), cidAll.size(),
@@ -312,7 +312,7 @@ public abstract class RebalanceImpl {
                 break;
         }
     }
-
+    /**移除不属于该消费者的topic*/
     private void truncateMessageQueueNotMyTopic() {
         Map<String, SubscriptionData> subTable = this.getSubscriptionInner();
 
@@ -348,9 +348,9 @@ public abstract class RebalanceImpl {
                     }
                 } else if (pq.isPullExpired()) {//如果pull超时
                     switch (this.consumeType()) {
-                        case CONSUME_ACTIVELY:
+                        case CONSUME_ACTIVELY://主动 pull
                             break;
-                        case CONSUME_PASSIVELY:
+                        case CONSUME_PASSIVELY://被动push
                             pq.setDropped(true);
                             if (this.removeUnnecessaryMessageQueue(mq, pq)) {
                                 it.remove();
@@ -404,7 +404,7 @@ public abstract class RebalanceImpl {
 
     public abstract void messageQueueChanged(final String topic, final Set<MessageQueue> mqAll,
         final Set<MessageQueue> mqDivided);
-
+    /**移除成功返回false*/
     public abstract boolean removeUnnecessaryMessageQueue(final MessageQueue mq, final ProcessQueue pq);
 
     public abstract ConsumeType consumeType();

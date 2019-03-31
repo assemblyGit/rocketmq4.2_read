@@ -76,7 +76,7 @@ public class ConsumerStatsManager {
     public void incConsumeOKTPS(final String group, final String topic, final long msgs) {
         this.topicAndGroupConsumeOKTPS.addValue(topic + "@" + group, (int) msgs, 1);
     }
-
+    /**增加统计值*/
     public void incConsumeFailedTPS(final String group, final String topic, final long msgs) {
         this.topicAndGroupConsumeFailedTPS.addValue(topic + "@" + group, (int) msgs, 1);
     }

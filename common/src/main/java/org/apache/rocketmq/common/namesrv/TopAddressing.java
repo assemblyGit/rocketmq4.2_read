@@ -28,7 +28,7 @@ import org.apache.rocketmq.common.help.FAQUrl;
 import org.apache.rocketmq.common.utils.HttpTinyClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+/**namesrv address server*/
 public class TopAddressing {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.COMMON_LOGGER_NAME);
 

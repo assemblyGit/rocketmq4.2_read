@@ -54,13 +54,13 @@ public class MappedFile extends ReferenceResource {
     private final AtomicInteger flushedPosition = new AtomicInteger(0);
     protected int fileSize;
     protected FileChannel fileChannel;
-    /**
+    /**    <p>messgae 可能先写入writeBuffer,然后再写入到FileChannel</p>
      * Message will put to here first, and then reput to FileChannel if writeBuffer is not null.
      */
     protected ByteBuffer writeBuffer = null;
     protected TransientStorePool transientStorePool = null;
     private String fileName;
-    private long fileFromOffset;
+    private long fileFromOffset;//file的起始偏移
     private File file;
     private MappedByteBuffer mappedByteBuffer;
     private volatile long storeTimestamp = 0;
@@ -204,7 +204,7 @@ public class MappedFile extends ReferenceResource {
 
         int currentPos = this.wrotePosition.get();//写位置
 
-        if (currentPos < this.fileSize) {
+        if (currentPos < this.fileSize) {//可写入位置小于文件大小
             ByteBuffer byteBuffer = writeBuffer != null ? writeBuffer.slice() : this.mappedByteBuffer.slice();
             byteBuffer.position(currentPos);
             AppendMessageResult result = null;

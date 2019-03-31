@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 
 public class MQFaultStrategy {
     private final static Logger log = ClientLogger.getLog();
-    private final LatencyFaultTolerance<String> latencyFaultTolerance = new LatencyFaultToleranceImpl();
+    private final LatencyFaultTolerance<String> latencyFaultTolerance = new LatencyFaultToleranceImpl();//延迟容错
 
     private boolean sendLatencyFaultEnable = false;
 

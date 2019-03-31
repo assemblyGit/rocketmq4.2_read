@@ -180,7 +180,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
      */
     private int pullThresholdSizeForQueue = 100;
 
-    /**
+    /**    <p>topic层面的流量控制,如果该值不是-1 无限制的,pullThresholdForQueue会基于pullThresholdForTopic计算被覆盖</p>
      * Flow control threshold on topic level, default value is -1(Unlimited)
      * <p>
      * The value of {@code pullThresholdForQueue} will be overwrote and calculated based on

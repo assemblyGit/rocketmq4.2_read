@@ -106,7 +106,7 @@ public class MessageStoreConfig {
     @ImportantField
     private int maxTransferCountOnMessageInDisk = 8;
     @ImportantField
-    private int accessMessageInMemoryMaxRatio = 40;//内存中的最大比例
+    private int accessMessageInMemoryMaxRatio = 40;//消息再内存中访问的最大比例,超过这个比例会建议访问slave
     @ImportantField
     private boolean messageIndexEnable = true;
     private int maxHashSlotNum = 5000000;
@@ -119,7 +119,7 @@ public class MessageStoreConfig {
     private int haHousekeepingInterval = 1000 * 20;
     private int haTransferBatchSize = 1024 * 32;
     @ImportantField
-    private String haMasterAddress = null;
+    private String haMasterAddress = null;//master地址
     private int haSlaveFallbehindMax = 1024 * 1024 * 256;
     @ImportantField
     private BrokerRole brokerRole = BrokerRole.ASYNC_MASTER;
@@ -526,7 +526,7 @@ public class MessageStoreConfig {
     public String getHaMasterAddress() {
         return haMasterAddress;
     }
-
+    /***/
     public void setHaMasterAddress(String haMasterAddress) {
         this.haMasterAddress = haMasterAddress;
     }

@@ -96,7 +96,7 @@ public class BrokerOuterAPI {
 
         this.remotingClient.updateNameServerAddressList(lst);
     }
-
+    /**由broker向每个namesrv注册*/
     public RegisterBrokerResult registerBrokerAll(
         final String clusterName,
         final String brokerAddr,

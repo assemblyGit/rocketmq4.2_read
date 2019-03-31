@@ -107,20 +107,20 @@ public class BrokerStartup {
             nettyServerConfig.setListenPort(10911);//监听端口
             final MessageStoreConfig messageStoreConfig = new MessageStoreConfig();
 
-            if (BrokerRole.SLAVE == messageStoreConfig.getBrokerRole()) {
+            if (BrokerRole.SLAVE == messageStoreConfig.getBrokerRole()) {//如果是从机器
                 int ratio = messageStoreConfig.getAccessMessageInMemoryMaxRatio() - 10;
                 messageStoreConfig.setAccessMessageInMemoryMaxRatio(ratio);
             }
 
             if (commandLine.hasOption('c')) {
-                String file = commandLine.getOptionValue('c');
+                String file = commandLine.getOptionValue('c');//配置文件
                 if (file != null) {
                     configFile = file;
                     InputStream in = new BufferedInputStream(new FileInputStream(file));
                     properties = new Properties();
                     properties.load(in);
 
-                    properties2SystemEnv(properties);
+                    properties2SystemEnv(properties);//
                     MixAll.properties2Object(properties, brokerConfig);
                     MixAll.properties2Object(properties, nettyServerConfig);
                     MixAll.properties2Object(properties, nettyClientConfig);
@@ -140,7 +140,7 @@ public class BrokerStartup {
             }
 
             String namesrvAddr = brokerConfig.getNamesrvAddr();
-            if (null != namesrvAddr) {
+            if (null != namesrvAddr) {//如果指定了namesrv
                 try {
                     String[] addrArray = namesrvAddr.split(";");
                     for (String addr : addrArray) {
@@ -240,7 +240,7 @@ public class BrokerStartup {
 
         return null;
     }
-
+    /**将property文件中的两个属性设置到*/
     private static void properties2SystemEnv(Properties properties) {
         if (properties == null) {
             return;

@@ -87,7 +87,7 @@ import org.apache.rocketmq.store.stats.BrokerStats;
 import org.apache.rocketmq.store.stats.BrokerStatsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+/**broker对外请求的ip*/
 public class BrokerController {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
     private static final Logger LOG_PROTECTION = LoggerFactory.getLogger(LoggerName.PROTECTION_LOGGER_NAME);
@@ -469,7 +469,7 @@ public class BrokerController {
     public void setBrokerStats(BrokerStats brokerStats) {
         this.brokerStats = brokerStats;
     }
-
+    /**周期性的消费者消费过慢*/
     public void protectBroker() {
         if (this.brokerConfig.isDisableConsumeIfConsumerReadSlowly()) {//如果消费者消费过慢 ,禁止消费者
             final Iterator<Map.Entry<String, MomentStatsItem>> it = this.brokerStatsManager.getMomentStatsItemSetFallSize().getStatsItemTable().entrySet().iterator();
@@ -700,7 +700,7 @@ public class BrokerController {
             this.brokerFastFailure.start();
         }
     }
-
+    /**向namesrv注册broker*/
     public synchronized void registerBrokerAll(final boolean checkOrderConfig, boolean oneway) {
         TopicConfigSerializeWrapper topicConfigWrapper = this.getTopicConfigManager().buildTopicConfigSerializeWrapper();
 
@@ -731,7 +731,7 @@ public class BrokerController {
             if (this.updateMasterHAServerAddrPeriodically && registerBrokerResult.getHaServerAddr() != null) {
                 this.messageStore.updateHaMasterAddress(registerBrokerResult.getHaServerAddr());
             }
-
+            /**主节点*/
             this.slaveSynchronize.setMasterAddr(registerBrokerResult.getMasterAddr());//设置master
 
             if (checkOrderConfig) {

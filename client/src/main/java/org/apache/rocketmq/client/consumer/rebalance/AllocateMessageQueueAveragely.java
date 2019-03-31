@@ -43,7 +43,7 @@ public class AllocateMessageQueueAveragely implements AllocateMessageQueueStrate
         }
 
         List<MessageQueue> result = new ArrayList<MessageQueue>();
-        if (!cidAll.contains(currentCID)) {
+        if (!cidAll.contains(currentCID)) {//消费者列表不包含当前cid
             log.info("[BUG] ConsumerGroup: {} The consumerId: {} not in cidAll: {}",
                 consumerGroup,
                 currentCID,
@@ -52,12 +52,12 @@ public class AllocateMessageQueueAveragely implements AllocateMessageQueueStrate
         }
 
         int index = cidAll.indexOf(currentCID);//当前cid在所有cid的中索引
-        int mod = mqAll.size() % cidAll.size();//mq分配给所有cid的
-        int averageSize =
+        int mod = mqAll.size() % cidAll.size();//mq分配给所有cid的余数
+        int averageSize =    // 队列数量小于消费者数量 每个消费者最多1个,  对于小于mod的index多分配一个
             mqAll.size() <= cidAll.size() ? 1 : (mod > 0 && index < mod ? mqAll.size() / cidAll.size()
                 + 1 : mqAll.size() / cidAll.size());//平均分配大小
-        int startIndex = (mod > 0 && index < mod) ? index * averageSize : index * averageSize + mod;
-        int range = Math.min(averageSize, mqAll.size() - startIndex);
+        int startIndex = (mod > 0 && index < mod) ? index * averageSize : index * averageSize + mod;   //开始队列的位置
+        int range = Math.min(averageSize, mqAll.size() - startIndex);//属于该cid的范围, 平均数和可分配的大小
         for (int i = 0; i < range; i++) {
             result.add(mqAll.get((startIndex + i) % mqAll.size()));
         }

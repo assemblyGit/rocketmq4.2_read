@@ -28,11 +28,11 @@ public enum GetMessageStatus {
 
     OFFSET_OVERFLOW_BADLY,//溢出很多
 
-    OFFSET_OVERFLOW_ONE,//溢出一个
+    OFFSET_OVERFLOW_ONE,//offset  == ConsumeQueue中的maxoff溢出一个
 
-    OFFSET_TOO_SMALL,
+    OFFSET_TOO_SMALL,//小于ConsumeQueue中的最小逻辑偏移
 
     NO_MATCHED_LOGIC_QUEUE,
 
-    NO_MESSAGE_IN_QUEUE,
+    NO_MESSAGE_IN_QUEUE,//ConsumeQueue的maxoff = 0
 }

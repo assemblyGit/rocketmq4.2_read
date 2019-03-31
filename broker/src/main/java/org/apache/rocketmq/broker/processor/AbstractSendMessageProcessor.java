@@ -245,7 +245,7 @@ public abstract class AbstractSendMessageProcessor implements NettyRequestProces
             }
         }
     }
-
+    /**执行send message hook*/
     public void executeSendMessageHookBefore(final ChannelHandlerContext ctx, final RemotingCommand request,
         SendMessageContext context) {
         if (hasSendMessageHook()) {

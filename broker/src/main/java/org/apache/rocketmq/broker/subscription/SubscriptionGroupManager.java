@@ -119,7 +119,7 @@ public class SubscriptionGroupManager extends ConfigManager {
 
     public SubscriptionGroupConfig findSubscriptionGroupConfig(final String group) {
         SubscriptionGroupConfig subscriptionGroupConfig = this.subscriptionGroupTable.get(group);
-        if (null == subscriptionGroupConfig) {
+        if (null == subscriptionGroupConfig) {//自动创建组配置
             if (brokerController.getBrokerConfig().isAutoCreateSubscriptionGroup() || MixAll.isSysConsumerGroup(group)) {
                 subscriptionGroupConfig = new SubscriptionGroupConfig();
                 subscriptionGroupConfig.setGroupName(group);

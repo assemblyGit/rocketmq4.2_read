@@ -26,12 +26,12 @@ import org.slf4j.LoggerFactory;
 /**消费者队列*/
 public class ConsumeQueue {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
-
+    /**ConsumeQueue 存储单元大小,每块内容对应一个消息逻辑偏移*/
     public static final int CQ_STORE_UNIT_SIZE = 20;
     private static final Logger LOG_ERROR = LoggerFactory.getLogger(LoggerName.STORE_ERROR_LOGGER_NAME);
 
     private final DefaultMessageStore defaultMessageStore;
-
+    /**可消费的队列持久化*/
     private final MappedFileQueue mappedFileQueue;
     private final String topic;
     private final int queueId;
@@ -39,7 +39,7 @@ public class ConsumeQueue {
     /**持久化数据的存储路径*/
     private final String storePath;
     private final int mappedFileSize;
-    private long maxPhysicOffset = -1;
+    private long maxPhysicOffset = -1;//最大物理偏移
     private volatile long minLogicOffset = 0;
     private ConsumeQueueExt consumeQueueExt = null;
 
@@ -58,7 +58,7 @@ public class ConsumeQueue {
 
         String queueDir = this.storePath
             + File.separator + topic
-            + File.separator + queueId;//queue文件
+            + File.separator + queueId;//queue文件存储位置
 
         this.mappedFileQueue = new MappedFileQueue(queueDir, mappedFileSize, null);
 
@@ -328,13 +328,13 @@ public class ConsumeQueue {
 
         return result;
     }
-
+    /**删除过期文件*/
     public int deleteExpiredFile(long offset) {
         int cnt = this.mappedFileQueue.deleteExpiredFileByOffset(offset, CQ_STORE_UNIT_SIZE);
         this.correctMinOffset(offset);
         return cnt;
     }
-
+    /**修正最小的逻辑偏移*/
     public void correctMinOffset(long phyMinOffset) {
         MappedFile mappedFile = this.mappedFileQueue.getFirstMappedFile();
         long minExtAddr = 1;
@@ -348,7 +348,7 @@ public class ConsumeQueue {
                         long tagsCode = result.getByteBuffer().getLong();
 
                         if (offsetPy >= phyMinOffset) {
-                            this.minLogicOffset = result.getMappedFile().getFileFromOffset() + i;
+                            this.minLogicOffset = result.getMappedFile().getFileFromOffset() + i;//
                             log.info("Compute logical min offset: {}, topic: {}, queueId: {}",
                                 this.getMinOffsetInQueue(), this.topic, this.queueId);
                             // This maybe not take effect, when not every consume queue has extend file.
@@ -374,7 +374,7 @@ public class ConsumeQueue {
     public long getMinOffsetInQueue() {
         return this.minLogicOffset / CQ_STORE_UNIT_SIZE;
     }
-
+    /**存放message position info*/
     public void putMessagePositionInfoWrapper(DispatchRequest request) {
         final int maxRetries = 30;
         boolean canWrite = this.defaultMessageStore.getRunningFlags().isCQWriteable();
@@ -420,17 +420,17 @@ public class ConsumeQueue {
     private boolean putMessagePositionInfo(final long offset, final int size, final long tagsCode,
         final long cqOffset) {
 
-        if (offset <= this.maxPhysicOffset) {
+        if (offset <= this.maxPhysicOffset) {//已存在的消息物理偏移
             return true;
         }
 
         this.byteBufferIndex.flip();
         this.byteBufferIndex.limit(CQ_STORE_UNIT_SIZE);
-        this.byteBufferIndex.putLong(offset);//物理偏移
+        this.byteBufferIndex.putLong(offset);//消息的物理偏移
         this.byteBufferIndex.putInt(size);
-        this.byteBufferIndex.putLong(tagsCode);//如果存在QueueExt,则为queueExt中的物理偏移,否则为tags的hashcode
+        this.byteBufferIndex.putLong(tagsCode);//如果存在QueueExt,则为queueExt文件中的物理偏移,否则为tags的hashcode
 
-        final long expectLogicOffset = cqOffset * CQ_STORE_UNIT_SIZE;
+        final long expectLogicOffset = cqOffset * CQ_STORE_UNIT_SIZE;//消费者队列文件的物理偏移
 
         MappedFile mappedFile = this.mappedFileQueue.getLastMappedFile(expectLogicOffset);//消息逻辑偏移
         if (mappedFile != null) {

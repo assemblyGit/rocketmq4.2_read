@@ -93,7 +93,7 @@ public class RunningFlags {
         }
         return result;
     }
-
+    /**逻辑队列异常*/
     public void makeLogicsQueueError() {
         this.flagBits |= WRITE_LOGICS_QUEUE_ERROR_BIT;
     }

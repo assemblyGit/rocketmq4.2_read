@@ -148,7 +148,7 @@ public class MappedFileQueue {
         File dir = new File(this.storePath);
         File[] files = dir.listFiles();
         if (files != null) {
-            // ascending order
+            // ascending order 升序排序
             Arrays.sort(files);
             for (File file : files) {
 
@@ -190,7 +190,7 @@ public class MappedFileQueue {
 
         return 0;
     }
-
+    /**startOffset 用于第一个文件的偏移*/
     public MappedFile getLastMappedFile(final long startOffset, boolean needCreate) {
         long createOffset = -1;
         MappedFile mappedFileLast = getLastMappedFile();
@@ -209,7 +209,7 @@ public class MappedFileQueue {
                 + UtilAll.offset2FileName(createOffset + this.mappedFileSize);//下下个文件
             MappedFile mappedFile = null;
 
-            if (this.allocateMappedFileService != null) {
+            if (this.allocateMappedFileService != null) {//如果存在该服务
                 mappedFile = this.allocateMappedFileService.putRequestAndReturnMappedFile(nextFilePath,
                     nextNextFilePath, this.mappedFileSize);
             } else {

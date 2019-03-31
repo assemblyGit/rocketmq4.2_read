@@ -42,7 +42,7 @@ import org.apache.rocketmq.store.SelectMappedBufferResult;
 import org.apache.rocketmq.store.config.StorePathConfigHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+/**调度延时消息*/
 public class ScheduleMessageService extends ConfigManager {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
 
@@ -50,10 +50,10 @@ public class ScheduleMessageService extends ConfigManager {
     private static final long FIRST_DELAY_TIME = 1000L;
     private static final long DELAY_FOR_A_WHILE = 100L;
     private static final long DELAY_FOR_A_PERIOD = 10000L;
-
+    /**延迟级别对应的延时*/
     private final ConcurrentMap<Integer /* level */, Long/* delay timeMillis */> delayLevelTable =
         new ConcurrentHashMap<Integer, Long>(32);
-
+    /**延迟级别对应的消息偏移*/
     private final ConcurrentMap<Integer /* level */, Long/* offset */> offsetTable =
         new ConcurrentHashMap<Integer, Long>(32);//延迟级别对应的消息逻辑偏移
 
@@ -70,7 +70,7 @@ public class ScheduleMessageService extends ConfigManager {
     public static int queueId2DelayLevel(final int queueId) {
         return queueId + 1;
     }
-
+    /**延迟级别对应的消息*/
     public static int delayLevel2QueueId(final int delayLevel) {
         return delayLevel - 1;
     }
@@ -100,7 +100,7 @@ public class ScheduleMessageService extends ConfigManager {
 
         return storeTimestamp + 1000;
     }
-
+    /***/
     public void start() {
 
         for (Map.Entry<Integer, Long> entry : this.delayLevelTable.entrySet()) {
@@ -158,7 +158,7 @@ public class ScheduleMessageService extends ConfigManager {
         if (jsonString != null) {
             DelayOffsetSerializeWrapper delayOffsetSerializeWrapper =
                 DelayOffsetSerializeWrapper.fromJson(jsonString, DelayOffsetSerializeWrapper.class);
-            if (delayOffsetSerializeWrapper != null) {
+            if (delayOffsetSerializeWrapper != null) {//偏移列表
                 this.offsetTable.putAll(delayOffsetSerializeWrapper.getOffsetTable());
             }
         }
@@ -169,13 +169,13 @@ public class ScheduleMessageService extends ConfigManager {
         delayOffsetSerializeWrapper.setOffsetTable(this.offsetTable);
         return delayOffsetSerializeWrapper.toJson(prettyFormat);
     }
-
+    /***/
     public boolean parseDelayLevel() {
         HashMap<String, Long> timeUnitTable = new HashMap<String, Long>();
-        timeUnitTable.put("s", 1000L);
-        timeUnitTable.put("m", 1000L * 60);
-        timeUnitTable.put("h", 1000L * 60 * 60);
-        timeUnitTable.put("d", 1000L * 60 * 60 * 24);
+        timeUnitTable.put("s", 1000L);//秒 对应 1000ms
+        timeUnitTable.put("m", 1000L * 60);//分
+        timeUnitTable.put("h", 1000L * 60 * 60);//小时
+        timeUnitTable.put("d", 1000L * 60 * 60 * 24);//天
 
         String levelString = this.defaultMessageStore.getMessageStoreConfig().getMessageDelayLevel();//消息延迟级别
         try {
@@ -201,7 +201,7 @@ public class ScheduleMessageService extends ConfigManager {
 
         return true;
     }
-
+    /**y延迟调度*/
     class DeliverDelayedMessageTimerTask extends TimerTask {
         private final int delayLevel;
         private final long offset;

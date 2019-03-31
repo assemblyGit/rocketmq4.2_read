@@ -28,7 +28,7 @@ public class SendMessageContext {
     private String producerGroup;
     private Message message;
     private MessageQueue mq;
-    private String brokerAddr;
+    private String brokerAddr;//broker地址
     private String bornHost;
     private CommunicationMode communicationMode;
     private SendResult sendResult;

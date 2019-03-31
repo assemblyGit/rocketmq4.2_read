@@ -37,7 +37,7 @@ public class HAConnection {
     private ReadSocketService readSocketService;
 
     private volatile long slaveRequestOffset = -1;//起始偏移
-    private volatile long slaveAckOffset = -1;
+    private volatile long slaveAckOffset = -1;//slave确认的偏移
 
     public HAConnection(final HAService haService, final SocketChannel socketChannel) throws IOException {
         this.haService = haService;
@@ -83,7 +83,7 @@ public class HAConnection {
         private final Selector selector;
         private final SocketChannel socketChannel;
         private final ByteBuffer byteBufferRead = ByteBuffer.allocate(READ_MAX_BUFFER_SIZE);
-        private int processPostion = 0;
+        private int processPostion = 0;//在byteBufferRead中已处理的字节
         private volatile long lastReadTimestamp = System.currentTimeMillis();
 
         public ReadSocketService(final SocketChannel socketChannel) throws IOException {
@@ -156,7 +156,7 @@ public class HAConnection {
             while (this.byteBufferRead.hasRemaining()) {
                 try {
                     int readSize = this.socketChannel.read(this.byteBufferRead);
-                    if (readSize > 0) {
+                    if (readSize > 0) {//读到字节
                         readSizeZeroTimes = 0;
                         this.lastReadTimestamp = HAConnection.this.haService.getDefaultMessageStore().getSystemClock().now();
                         if ((this.byteBufferRead.position() - this.processPostion) >= 8) {//8字节的长度
@@ -189,20 +189,20 @@ public class HAConnection {
             return true;
         }
     }
-
+    /***/
     class WriteSocketService extends ServiceThread {
         private final Selector selector;
         private final SocketChannel socketChannel;
 
         private final int headerSize = 8 + 4;
         private final ByteBuffer byteBufferHeader = ByteBuffer.allocate(headerSize);
-        private long nextTransferFromWhere = -1;
+        private long nextTransferFromWhere = -1;//下次传输起始位置
         private SelectMappedBufferResult selectMappedBufferResult;
-        private boolean lastWriteOver = true;
+        private boolean lastWriteOver = true; //上次write事件写完byte
         private long lastWriteTimestamp = System.currentTimeMillis();
 
         public WriteSocketService(final SocketChannel socketChannel) throws IOException {
-            this.selector = RemotingUtil.openSelector();
+            this.selector = RemotingUtil.openSelector();//每个读写线程一个selector
             this.socketChannel = socketChannel;
             this.socketChannel.register(this.selector, SelectionKey.OP_WRITE);
             this.thread.setDaemon(true);
@@ -216,13 +216,13 @@ public class HAConnection {
                 try {
                     this.selector.select(1000);
 
-                    if (-1 == HAConnection.this.slaveRequestOffset) {
+                    if (-1 == HAConnection.this.slaveRequestOffset) {//如果没有获取到slave请求的偏移
                         Thread.sleep(10);
                         continue;
                     }
 
                     if (-1 == this.nextTransferFromWhere) {//如果下次传输起点未知
-                        if (0 == HAConnection.this.slaveRequestOffset) {
+                        if (0 == HAConnection.this.slaveRequestOffset) {//slave 请求的偏移
                             long masterOffset = HAConnection.this.haService.getDefaultMessageStore().getCommitLog().getMaxOffset();
                             masterOffset =
                                 masterOffset
@@ -324,7 +324,7 @@ public class HAConnection {
 
             HAConnection.log.info(this.getServiceName() + " service end");
         }
-
+        /**传输数据*/
         private boolean transferData() throws Exception {
             int writeSizeZeroTimes = 0;
             // Write Header
@@ -349,7 +349,7 @@ public class HAConnection {
             writeSizeZeroTimes = 0;
 
             // Write Body
-            if (!this.byteBufferHeader.hasRemaining()) {
+            if (!this.byteBufferHeader.hasRemaining()) {//写入头部
                 while (this.selectMappedBufferResult.getByteBuffer().hasRemaining()) {
                     int writeSize = this.socketChannel.write(this.selectMappedBufferResult.getByteBuffer());
                     if (writeSize > 0) {

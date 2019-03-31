@@ -47,7 +47,7 @@ public class StoreStatsService extends ServiceThread {
     private final Map<String, AtomicLong> putMessageTopicSizeTotal =
         new ConcurrentHashMap<String, AtomicLong>(128);
 
-    private final AtomicLong getMessageTimesTotalFound = new AtomicLong(0);
+    private final AtomicLong getMessageTimesTotalFound = new AtomicLong(0);//总的查找时间
     private final AtomicLong getMessageTransferedMsgCount = new AtomicLong(0);
     private final AtomicLong getMessageTimesTotalMiss = new AtomicLong(0);
     private final LinkedList<CallSnapshot> putTimesList = new LinkedList<CallSnapshot>();

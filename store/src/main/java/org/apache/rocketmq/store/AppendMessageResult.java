@@ -24,7 +24,7 @@ public class AppendMessageResult {
     private AppendMessageStatus status;
     // Where to start writing
     private long wroteOffset;
-    // Write Bytes
+    // Write Bytes   写入的字节数
     private int wroteBytes;
     // Message ID
     private String msgId;

@@ -182,7 +182,7 @@ public class BrokerStatsManager {
         final String statsKey = String.format("%d@%s@%s", queueId, topic, group);
         this.momentStatsItemSetFallTime.getAndCreateStatsItem(statsKey).getValue().set(fallBehind);
     }
-
+     /**再磁盘上记录落后的大小*/
     public void recordDiskFallBehindSize(final String group, final String topic, final int queueId,
         final long fallBehind) {
         final String statsKey = String.format("%d@%s@%s", queueId, topic, group);

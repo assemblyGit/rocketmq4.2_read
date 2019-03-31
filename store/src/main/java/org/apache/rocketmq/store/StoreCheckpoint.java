@@ -26,13 +26,13 @@ import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.constant.LoggerName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+/**存储检查点*/
 public class StoreCheckpoint {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
     private final RandomAccessFile randomAccessFile;
     private final FileChannel fileChannel;
     private final MappedByteBuffer mappedByteBuffer;
-    private volatile long physicMsgTimestamp = 0;//
+    private volatile long physicMsgTimestamp = 0;//物理
     private volatile long logicsMsgTimestamp = 0;//逻辑消息
     private volatile long indexMsgTimestamp = 0;//索引文件满了之后最有一个时间戳
 

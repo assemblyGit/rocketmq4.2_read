@@ -67,7 +67,7 @@ import org.apache.rocketmq.remoting.exception.RemotingTooMuchRequestException;
 import org.apache.rocketmq.remoting.protocol.RemotingCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+/**网络访问,维护每个addr对应的channel*/
 public class NettyRemotingClient extends NettyRemotingAbstract implements RemotingClient {
     private static final Logger log = LoggerFactory.getLogger(RemotingHelper.ROCKETMQ_REMOTING);
 
@@ -82,10 +82,10 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
     private final Timer timer = new Timer("ClientHouseKeepingService", true);
 
     private final AtomicReference<List<String>> namesrvAddrList = new AtomicReference<List<String>>();
-    private final AtomicReference<String> namesrvAddrChoosed = new AtomicReference<String>();
+    private final AtomicReference<String> namesrvAddrChoosed = new AtomicReference<String>();//namesrv列表中选择的namesrv地址
     private final AtomicInteger namesrvIndex = new AtomicInteger(initValueIndex());
     private final Lock lockNamesrvChannel = new ReentrantLock();
-
+    /**公共默认Executor*/
     private final ExecutorService publicExecutor;
 
     /**
@@ -360,13 +360,13 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
     @Override
     public RemotingCommand invokeSync(String addr, final RemotingCommand request, long timeoutMillis)
         throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException {
-        final Channel channel = this.getAndCreateChannel(addr);
+        final Channel channel = this.getAndCreateChannel(addr);//创建每个地址对应的渠道
         if (channel != null && channel.isActive()) {
             try {
                 if (this.rpcHook != null) {
                     this.rpcHook.doBeforeRequest(addr, request);
                 }
-                RemotingCommand response = this.invokeSyncImpl(channel, request, timeoutMillis);
+                RemotingCommand response = this.invokeSyncImpl(channel, request, timeoutMillis);//同步调用
                 if (this.rpcHook != null) {
                     this.rpcHook.doAfterResponse(RemotingHelper.parseChannelRemoteAddr(channel), request, response);
                 }
@@ -400,7 +400,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 
         return this.createChannel(addr);
     }
-
+    /**创建nameserver channel*/
     private Channel getAndCreateNameserverChannel() throws InterruptedException {
         String addr = this.namesrvAddrChoosed.get();
         if (addr != null) {
@@ -474,8 +474,8 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
                     createNewConnection = true;
                 }
 
-                if (createNewConnection) {
-                    ChannelFuture channelFuture = this.bootstrap.connect(RemotingHelper.string2SocketAddress(addr));
+                if (createNewConnection) {//创建新的连接
+                    ChannelFuture channelFuture = this.bootstrap.connect(RemotingHelper.string2SocketAddress(addr));//bootstrap连接到新的节点
                     log.info("createChannel: begin to connect remote host[{}] asynchronously", addr);
                     cw = new ChannelWrapper(channelFuture);
                     this.channelTables.put(addr, cw);
@@ -554,7 +554,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
     public void registerProcessor(int requestCode, NettyRequestProcessor processor, ExecutorService executor) {
         ExecutorService executorThis = executor;
         if (null == executor) {
-            executorThis = this.publicExecutor;
+            executorThis = this.publicExecutor;//
         }
 
         Pair<NettyRequestProcessor, ExecutorService> pair = new Pair<NettyRequestProcessor, ExecutorService>(processor, executorThis);

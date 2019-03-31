@@ -807,7 +807,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
     /**将订阅信息copy到rebalanceImpl*/
     private void copySubscription() throws MQClientException {
         try {
-            Map<String, String> sub = this.defaultMQPushConsumer.getSubscription();
+            Map<String, String> sub = this.defaultMQPushConsumer.getSubscription();//直接设置订阅的情况
             if (sub != null) {
                 for (final Map.Entry<String, String> entry : sub.entrySet()) {
                     final String topic = entry.getKey();
@@ -856,7 +856,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
     public ConcurrentMap<String, SubscriptionData> getSubscriptionInner() {
         return this.rebalanceImpl.getSubscriptionInner();
     }
-
+    /**订阅 信息*/
     public void subscribe(String topic, String subExpression) throws MQClientException {
         try {
             SubscriptionData subscriptionData = FilterAPI.buildSubscriptionData(this.defaultMQPushConsumer.getConsumerGroup(),

@@ -31,12 +31,12 @@ import org.apache.rocketmq.store.config.BrokerRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**    <p>创建MappedFile</p>
+/**    <p>提前创建创建MappedFile</p>
  * Create MappedFile in advance
  */
 public class AllocateMappedFileService extends ServiceThread {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
-    private static int waitTimeOut = 1000 * 5;
+    private static int waitTimeOut = 1000 * 5;//等待5秒的创建mappedFile时间
     private ConcurrentMap<String, AllocateRequest> requestTable =
         new ConcurrentHashMap<String, AllocateRequest>();
     private PriorityBlockingQueue<AllocateRequest> requestQueue =
@@ -47,7 +47,7 @@ public class AllocateMappedFileService extends ServiceThread {
     public AllocateMappedFileService(DefaultMessageStore messageStore) {
         this.messageStore = messageStore;
     }
-    /***/
+    /**创建mappfie请求*/
     public MappedFile putRequestAndReturnMappedFile(String nextFilePath, String nextNextFilePath, int fileSize) {
         int canSubmitRequests = 2;
         if (this.messageStore.getMessageStoreConfig().isTransientStorePoolEnable()) {
@@ -60,7 +60,7 @@ public class AllocateMappedFileService extends ServiceThread {
         AllocateRequest nextReq = new AllocateRequest(nextFilePath, fileSize);
         boolean nextPutOK = this.requestTable.putIfAbsent(nextFilePath, nextReq) == null;
 
-        if (nextPutOK) {
+        if (nextPutOK) {//不存在相同文件的前一次请求
             if (canSubmitRequests <= 0) {
                 log.warn("[NOTIFYME]TransientStorePool is not enough, so create mapped file error, " +
                     "RequestQueueSize : {}, StorePoolSize: {}", this.requestQueue.size(), this.messageStore.getTransientStorePool().remainBufferNumbs());
@@ -147,7 +147,7 @@ public class AllocateMappedFileService extends ServiceThread {
         log.info(this.getServiceName() + " service end");
     }
 
-    /**
+    /**    <p>只有被其他线程中断的情况下会返回false</p>
      * Only interrupted by the external thread, will return false
      */
     private boolean mmapOperation() {

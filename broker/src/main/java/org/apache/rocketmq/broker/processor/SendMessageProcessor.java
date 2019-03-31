@@ -50,7 +50,7 @@ import org.apache.rocketmq.store.MessageExtBrokerInner;
 import org.apache.rocketmq.store.PutMessageResult;
 import org.apache.rocketmq.store.config.StorePathConfigHelper;
 import org.apache.rocketmq.store.stats.BrokerStatsManager;
-
+/**send message处理器*/
 public class SendMessageProcessor extends AbstractSendMessageProcessor implements NettyRequestProcessor {
 
     private List<ConsumeMessageHook> consumeMessageHookList;
@@ -125,13 +125,13 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
             response.setRemark("the broker[" + this.brokerController.getBrokerConfig().getBrokerIP1() + "] sending message is forbidden");
             return response;
         }
-
+        /**重试队列*/
         if (subscriptionGroupConfig.getRetryQueueNums() <= 0) {//重试队列
             response.setCode(ResponseCode.SUCCESS);
             response.setRemark(null);
             return response;
         }
-
+        /**重试话题基于组*/
         String newTopic = MixAll.getRetryTopic(requestHeader.getGroup());//构建话题为 重试话题
         int queueIdInt = Math.abs(this.random.nextInt() % 99999999) % subscriptionGroupConfig.getRetryQueueNums();
 
@@ -139,7 +139,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         if (requestHeader.isUnitMode()) {
             topicSysFlag = TopicSysFlag.buildSysFlag(false, true);
         }
-
+        /**创建重试话题*/
         TopicConfig topicConfig = this.brokerController.getTopicConfigManager().createTopicInSendMessageBackMethod(
             newTopic,
             subscriptionGroupConfig.getRetryQueueNums(),
@@ -164,7 +164,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         }
 
         final String retryTopic = msgExt.getProperty(MessageConst.PROPERTY_RETRY_TOPIC);
-        if (null == retryTopic) {//重试topic
+        if (null == retryTopic) {//重试对应的原topic
             MessageAccessor.putProperty(msgExt, MessageConst.PROPERTY_RETRY_TOPIC, msgExt.getTopic());
         }
         msgExt.setWaitStoreMsgOK(false);
@@ -245,13 +245,13 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         response.setRemark("putMessageResult is null");
         return response;
     }
-
+    /**如果需要将retry处理为DLQ,且DLQ处理失败返回false*/
     private boolean handleRetryAndDLQ(SendMessageRequestHeader requestHeader, RemotingCommand response,
         RemotingCommand request,
         MessageExt msg, TopicConfig topicConfig) {
         String newTopic = requestHeader.getTopic();
         if (null != newTopic && newTopic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) {//如果是重试组开始
-            String groupName = newTopic.substring(MixAll.RETRY_GROUP_TOPIC_PREFIX.length());
+            String groupName = newTopic.substring(MixAll.RETRY_GROUP_TOPIC_PREFIX.length());//重试topic的组
             SubscriptionGroupConfig subscriptionGroupConfig =
                 this.brokerController.getSubscriptionGroupManager().findSubscriptionGroupConfig(groupName);
             if (null == subscriptionGroupConfig) {
@@ -261,12 +261,12 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
                 return false;
             }
 
-            int maxReconsumeTimes = subscriptionGroupConfig.getRetryMaxTimes();//重试组打次数
+            int maxReconsumeTimes = subscriptionGroupConfig.getRetryMaxTimes();//重试组最大次数
             if (request.getVersion() >= MQVersion.Version.V3_4_9.ordinal()) {
                 maxReconsumeTimes = requestHeader.getMaxReconsumeTimes();
             }
             int reconsumeTimes = requestHeader.getReconsumeTimes() == null ? 0 : requestHeader.getReconsumeTimes();
-            if (reconsumeTimes >= maxReconsumeTimes) {//如果重试次数大于最大重试次数
+            if (reconsumeTimes >= maxReconsumeTimes) {//如果重试次数大于最大重试次数,转到DLQ topic
                 newTopic = MixAll.getDLQTopic(groupName);
                 int queueIdInt = Math.abs(this.random.nextInt() % 99999999) % DLQ_NUMS_PER_GROUP;
                 topicConfig = this.brokerController.getTopicConfigManager().createTopicInSendMessageBackMethod(newTopic,
@@ -320,10 +320,10 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
 
         final byte[] body = request.getBody();
 
-        int queueIdInt = requestHeader.getQueueId();
+        int queueIdInt = requestHeader.getQueueId();//写入的队列
         TopicConfig topicConfig = this.brokerController.getTopicConfigManager().selectTopicConfig(requestHeader.getTopic());
 
-        if (queueIdInt < 0) {
+        if (queueIdInt < 0) {//未指定queueId
             queueIdInt = Math.abs(this.random.nextInt() % 99999999) % topicConfig.getWriteQueueNums();
         }
         /**内部消息*/
@@ -345,7 +345,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         msgInner.setReconsumeTimes(requestHeader.getReconsumeTimes() == null ? 0 : requestHeader.getReconsumeTimes());
 
         if (this.brokerController.getBrokerConfig().isRejectTransactionMessage()) {//拒绝事务消息
-            String traFlag = msgInner.getProperty(MessageConst.PROPERTY_TRANSACTION_PREPARED);
+            String traFlag = msgInner.getProperty(MessageConst.PROPERTY_TRANSACTION_PREPARED);//如果是事务消息
             if (traFlag != null) {
                 response.setCode(ResponseCode.NO_PERMISSION);
                 response.setRemark(
@@ -432,7 +432,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
 
             responseHeader.setMsgId(putMessageResult.getAppendMessageResult().getMsgId());
             responseHeader.setQueueId(queueIdInt);
-            responseHeader.setQueueOffset(putMessageResult.getAppendMessageResult().getLogicsOffset());
+            responseHeader.setQueueOffset(putMessageResult.getAppendMessageResult().getLogicsOffset());//队列中的偏移
 
             doResponse(ctx, request, response);
 

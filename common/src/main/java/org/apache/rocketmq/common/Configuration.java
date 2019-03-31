@@ -26,7 +26,7 @@ import java.util.Properties;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.slf4j.Logger;
-
+/**配置对象列表*/
 public class Configuration {
 
     private final Logger log;
@@ -38,7 +38,7 @@ public class Configuration {
     private Field storePathField;
     private DataVersion dataVersion = new DataVersion();
     private ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-    /**
+    /**    <p>所有properties</p>
      * All properties include configs in object and extend properties.
      */
     private Properties allConfigs = new Properties();
@@ -87,7 +87,7 @@ public class Configuration {
         return this;
     }
 
-    /**
+    /**    <p>注册配置的属性</p>
      * register config properties
      *
      * @return the current Configuration object

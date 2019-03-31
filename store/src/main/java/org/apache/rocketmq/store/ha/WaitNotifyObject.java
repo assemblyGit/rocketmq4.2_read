@@ -27,7 +27,7 @@ public class WaitNotifyObject {
 
     protected final HashMap<Long/* thread id */, Boolean/* notified */> waitingThreadTable =
         new HashMap<Long, Boolean>(16);
-
+    /**为了处理notify在wait之前*/
     protected volatile boolean hasNotified = false;
 
     public void wakeup() {

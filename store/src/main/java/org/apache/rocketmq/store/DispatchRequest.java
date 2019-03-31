@@ -25,7 +25,7 @@ public class DispatchRequest {
     private final int msgSize;
     private final long tagsCode;
     private final long storeTimestamp;
-    private final long consumeQueueOffset;//
+    private final long consumeQueueOffset;//commitLog中commit的时候,消费者队列 topicQueueTable 中的topic对应的偏移
     private final String keys;
     private final boolean success;
     private final String uniqKey;

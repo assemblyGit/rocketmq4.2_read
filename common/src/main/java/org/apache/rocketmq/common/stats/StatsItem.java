@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import org.apache.rocketmq.common.UtilAll;
 import org.slf4j.Logger;
-
+/**采样条目*/
 public class StatsItem {
 
     private final AtomicLong value = new AtomicLong(0);

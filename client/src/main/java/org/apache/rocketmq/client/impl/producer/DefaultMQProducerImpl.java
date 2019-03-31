@@ -182,7 +182,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
 
         this.mQClientFactory.sendHeartbeatToAllBrokerWithLock();
     }
-
+    /**检查组是否满足要求*/
     private void checkConfig() throws MQClientException {
         Validators.checkGroup(this.defaultMQProducer.getProducerGroup());
 
@@ -430,7 +430,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
     public void updateFaultItem(final String brokerName, final long currentLatency, boolean isolation) {
         this.mqFaultStrategy.updateFaultItem(brokerName, currentLatency, isolation);
     }
-
+    /***/
     private SendResult sendDefaultImpl(
         Message msg,
         final CommunicationMode communicationMode,
@@ -440,7 +440,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         this.makeSureStateOK();
         Validators.checkMessage(msg, this.defaultMQProducer);
 
-        final long invokeID = random.nextLong();
+        final long invokeID = random.nextLong();//调用ID
         long beginTimestampFirst = System.currentTimeMillis();
         long beginTimestampPrev = beginTimestampFirst;
         long endTimestamp = beginTimestampFirst;
@@ -449,15 +449,15 @@ public class DefaultMQProducerImpl implements MQProducerInner {
             MessageQueue mq = null;
             Exception exception = null;
             SendResult sendResult = null;
-            int timesTotal = communicationMode == CommunicationMode.SYNC ? 1 + this.defaultMQProducer.getRetryTimesWhenSendFailed() : 1;
+            int timesTotal = communicationMode == CommunicationMode.SYNC ? 1 + this.defaultMQProducer.getRetryTimesWhenSendFailed() : 1;//发送次数
             int times = 0;
             String[] brokersSent = new String[timesTotal];
             for (; times < timesTotal; times++) {//重试次数
                 String lastBrokerName = null == mq ? null : mq.getBrokerName();
-                MessageQueue mqSelected = this.selectOneMessageQueue(topicPublishInfo, lastBrokerName);//选择一个message queue
+                MessageQueue mqSelected = this.selectOneMessageQueue(topicPublishInfo, lastBrokerName);//选择一个message queue 根据ThreadLocal的Index,取余
                 if (mqSelected != null) {
                     mq = mqSelected;
-                    brokersSent[times] = mq.getBrokerName();
+                    brokersSent[times] = mq.getBrokerName();//
                     try {
                         beginTimestampPrev = System.currentTimeMillis();
                         sendResult = this.sendKernelImpl(msg, mq, communicationMode, sendCallback, topicPublishInfo, timeout);//核心发送
@@ -470,7 +470,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                                 return null;
                             case SYNC:    //同步发送
                                 if (sendResult.getSendStatus() != SendStatus.SEND_OK) {//如果发送结果不是ok
-                                    if (this.defaultMQProducer.isRetryAnotherBrokerWhenNotStoreOK()) {
+                                    if (this.defaultMQProducer.isRetryAnotherBrokerWhenNotStoreOK()) {//如果存储不成功,重试另一个Broker
                                         continue;
                                     }
                                 }
@@ -606,7 +606,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                 }
 
                 int sysFlag = 0;
-                if (this.tryToCompressMessage(msg)) {
+                if (this.tryToCompressMessage(msg)) {//需要压缩消息
                     sysFlag |= MessageSysFlag.COMPRESSED_FLAG;
                 }
 
@@ -751,7 +751,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         }
         byte[] body = msg.getBody();
         if (body != null) {
-            if (body.length >= this.defaultMQProducer.getCompressMsgBodyOverHowmuch()) {
+            if (body.length >= this.defaultMQProducer.getCompressMsgBodyOverHowmuch()) {//大于压缩阀值
                 try {
                     byte[] data = UtilAll.compress(body, zipCompressLevel);
                     if (data != null) {

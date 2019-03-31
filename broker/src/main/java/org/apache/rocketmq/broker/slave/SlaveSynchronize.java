@@ -27,7 +27,7 @@ import org.apache.rocketmq.common.protocol.body.TopicConfigSerializeWrapper;
 import org.apache.rocketmq.store.config.StorePathConfigHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+/**从同步,从namesrv获取主节点的内容*/
 public class SlaveSynchronize {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
     private final BrokerController brokerController;
@@ -59,7 +59,7 @@ public class SlaveSynchronize {
                 TopicConfigSerializeWrapper topicWrapper =
                     this.brokerController.getBrokerOuterAPI().getAllTopicConfig(masterAddrBak);
                 if (!this.brokerController.getTopicConfigManager().getDataVersion()
-                    .equals(topicWrapper.getDataVersion())) {
+                    .equals(topicWrapper.getDataVersion())) {//如果数据版本不一致
 
                     this.brokerController.getTopicConfigManager().getDataVersion()
                         .assignNewOne(topicWrapper.getDataVersion());

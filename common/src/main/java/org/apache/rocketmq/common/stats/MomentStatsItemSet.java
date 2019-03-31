@@ -60,7 +60,7 @@ public class MomentStatsItemSet {
             }
         }, Math.abs(UtilAll.computNextMinutesTimeMillis() - System.currentTimeMillis()), 1000 * 60 * 5, TimeUnit.MILLISECONDS);
     }
-
+    /**再每次打印*/
     private void printAtMinutes() {
         Iterator<Entry<String, MomentStatsItem>> it = this.statsItemTable.entrySet().iterator();
         while (it.hasNext()) {
@@ -73,7 +73,7 @@ public class MomentStatsItemSet {
         MomentStatsItem statsItem = this.getAndCreateStatsItem(statsKey);
         statsItem.getValue().set(value);
     }
-
+    /**统计条目*/
     public MomentStatsItem getAndCreateStatsItem(final String statsKey) {
         MomentStatsItem statsItem = this.statsItemTable.get(statsKey);
         if (null == statsItem) {

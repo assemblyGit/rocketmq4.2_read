@@ -78,7 +78,7 @@ public class CommitLogDispatcherCalcBitMap implements CommitLogDispatcher {
 
                 Object ret = null;
                 try {
-                    MessageEvaluationContext context = new MessageEvaluationContext(request.getPropertiesMap());
+                    MessageEvaluationContext context = new MessageEvaluationContext(request.getPropertiesMap());//根据数据计算
 
                     ret = filterData.getCompiledExpression().evaluate(context);
                 } catch (Throwable e) {
@@ -88,7 +88,7 @@ public class CommitLogDispatcherCalcBitMap implements CommitLogDispatcher {
                 log.debug("Result of Calc bit map:ret={}, data={}, props={}, offset={}", ret, filterData, request.getPropertiesMap(), request.getCommitLogOffset());
 
                 // eval true
-                if (ret != null && ret instanceof Boolean && (Boolean) ret) {
+                if (ret != null && ret instanceof Boolean && (Boolean) ret) {//创建hash
                     consumerFilterManager.getBloomFilter().hashTo(
                         filterData.getBloomFilterData(),
                         filterBitMap

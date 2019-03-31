@@ -53,12 +53,12 @@ public class BrokerConfig {
     private boolean autoCreateSubscriptionGroup = true;
     private String messageStorePlugIn = "";
 
-    /**
+    /**    <p>send_message类型命令的处理器</p>
      * thread numbers for send message thread pool, since spin lock will be used by default since 4.0.x, the default
      * value is 1.
      */
     private int sendMessageThreadPoolNums = 1; //16 + Runtime.getRuntime().availableProcessors() * 4;
-    private int pullMessageThreadPoolNums = 16 + Runtime.getRuntime().availableProcessors() * 2;
+    private int pullMessageThreadPoolNums = 16 + Runtime.getRuntime().availableProcessors() * 2;//都代表一类命令的处理器
     private int queryMessageThreadPoolNums = 8 + Runtime.getRuntime().availableProcessors();
 
     private int adminBrokerThreadPoolNums = 16;

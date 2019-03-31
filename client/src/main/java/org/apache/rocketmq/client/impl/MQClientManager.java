@@ -24,7 +24,7 @@ import org.apache.rocketmq.client.impl.factory.MQClientInstance;
 import org.apache.rocketmq.client.log.ClientLogger;
 import org.apache.rocketmq.remoting.RPCHook;
 import org.slf4j.Logger;
-
+/**维护clientI到MQClientInstance的实例*/
 public class MQClientManager {
     private final static Logger log = ClientLogger.getLog();
     private static MQClientManager instance = new MQClientManager();

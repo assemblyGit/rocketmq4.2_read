@@ -22,7 +22,7 @@ import java.util.Set;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageExtBatch;
 
-/**
+/**    <p>允许第三方厂商实现自定义消息存储</p>
  * This class defines contracting interfaces to implement, allowing third-party vendor to use customized message store.
  */
 public interface MessageStore {

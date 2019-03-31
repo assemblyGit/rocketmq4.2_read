@@ -148,7 +148,7 @@ public class PullMessageProcessor implements NettyRequestProcessor {
 
         SubscriptionData subscriptionData = null;
         ConsumerFilterData consumerFilterData = null;
-        if (hasSubscriptionFlag) {//如果有订阅标志
+        if (hasSubscriptionFlag) {//如果有订阅标志,每次pull的时候使用新的subscription
             try {
                 subscriptionData = FilterAPI.build(
                     requestHeader.getTopic(), requestHeader.getSubscription(), requestHeader.getExpressionType()
@@ -403,7 +403,7 @@ public class PullMessageProcessor implements NettyRequestProcessor {
                         response = null;
                     }
                     break;
-                case ResponseCode.PULL_NOT_FOUND:
+                case ResponseCode.PULL_NOT_FOUND: //没有pull到消息
 
                     if (brokerAllowSuspend && hasSuspendFlag) {//如果有挂起标志
                         long pollingTimeMills = suspendTimeoutMillisLong;
@@ -529,7 +529,7 @@ public class PullMessageProcessor implements NettyRequestProcessor {
             log.warn(String.format("generateOffsetMovedEvent Exception, %s", event.toString()), e);
         }
     }
-
+    /**提交挂起的任务*/
     public void executeRequestWhenWakeup(final Channel channel,
         final RemotingCommand request) throws RemotingCommandException {
         Runnable run = new Runnable() {

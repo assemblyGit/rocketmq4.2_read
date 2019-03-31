@@ -49,7 +49,7 @@ public class RebalancePushImpl extends RebalanceImpl {
 
     @Override
     public void messageQueueChanged(String topic, Set<MessageQueue> mqAll, Set<MessageQueue> mqDivided) {
-        /**
+        /**   当负载平衡结果发生变化
          * When rebalance result changed, should update subscription's version to notify broker.
          * Fix: inconsistency subscription may lead to consumer miss messages.
          */
@@ -78,11 +78,11 @@ public class RebalancePushImpl extends RebalanceImpl {
         }
 
         // notify broker
-        this.getmQClientFactory().sendHeartbeatToAllBrokerWithLock();
+        this.getmQClientFactory().sendHeartbeatToAllBrokerWithLock();//发送心跳到broker
     }
 
     @Override
-    public boolean removeUnnecessaryMessageQueue(MessageQueue mq, ProcessQueue pq) {
+    public boolean removeUnnecessaryMessageQueue(MessageQueue mq, ProcessQueue pq) {//在
         this.defaultMQPushConsumerImpl.getOffsetStore().persist(mq);
         this.defaultMQPushConsumerImpl.getOffsetStore().removeOffset(mq);
         if (this.defaultMQPushConsumerImpl.isConsumeOrderly()//如果顺序消费
@@ -109,7 +109,7 @@ public class RebalancePushImpl extends RebalanceImpl {
         }
         return true;
     }
-    /***/
+    /**如果存在临时消息,删除解锁*/
     private boolean unlockDelay(final MessageQueue mq, final ProcessQueue pq) {
 
         if (pq.hasTempMessage()) {//如果存在临时消息
