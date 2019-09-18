@@ -177,7 +177,7 @@ public class MQClientInstance {
             for (QueueData qd : qds) {
                 if (PermName.isWriteable(qd.getPerm())) {
                     BrokerData brokerData = null;
-                    for (BrokerData bd : route.getBrokerDatas()) {
+                    for (BrokerData bd : route.getBrokerDatas()) {//找到queue对应的broker主从
                         if (bd.getBrokerName().equals(qd.getBrokerName())) {//
                             brokerData = bd;
                             break;
@@ -1184,7 +1184,7 @@ public class MQClientInstance {
 
         return null;
     }
-
+    /**client运行信息*/
     public ConsumerRunningInfo consumerRunningInfo(final String consumerGroup) {
         MQConsumerInner mqConsumerInner = this.consumerTable.get(consumerGroup);
 

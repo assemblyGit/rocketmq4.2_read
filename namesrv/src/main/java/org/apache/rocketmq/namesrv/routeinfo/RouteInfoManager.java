@@ -44,7 +44,7 @@ import org.apache.rocketmq.common.sysflag.TopicSysFlag;
 import org.apache.rocketmq.remoting.common.RemotingUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+/**topic 和所有broker信息*/
 public class RouteInfoManager {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
     private final static long BROKER_CHANNEL_EXPIRED_TIME = 1000 * 60 * 2;
@@ -136,7 +136,7 @@ public class RouteInfoManager {
                     if (this.isBrokerTopicConfigChanged(brokerAddr, topicConfigWrapper.getDataVersion())//如果broker的topic配置发生变化,或者首次注册
                         || registerFirst) {
                         ConcurrentMap<String, TopicConfig> tcTable =
-                            topicConfigWrapper.getTopicConfigTable();
+                            topicConfigWrapper.getTopicConfigTable();//broker主从到topic config
                         if (tcTable != null) {
                             for (Map.Entry<String, TopicConfig> entry : tcTable.entrySet()) {
                                 this.createAndUpdateQueueData(brokerName, entry.getValue());
@@ -150,7 +150,7 @@ public class RouteInfoManager {
                         System.currentTimeMillis(),
                         topicConfigWrapper.getDataVersion(),
                         channel,
-                        haServerAddr));
+                        haServerAddr));//存放broker存活信息
                 if (null == prevBrokerLiveInfo) {
                     log.info("new broker registered, {} HAServer: {}", brokerAddr, haServerAddr);
                 }
@@ -163,7 +163,7 @@ public class RouteInfoManager {
                     }
                 }
 
-                if (MixAll.MASTER_ID != brokerId) {
+                if (MixAll.MASTER_ID != brokerId) {//如果不是主节点
                     String masterAddr = brokerData.getBrokerAddrs().get(MixAll.MASTER_ID);
                     if (masterAddr != null) {
                         BrokerLiveInfo brokerLiveInfo = this.brokerLiveTable.get(masterAddr);
@@ -443,7 +443,7 @@ public class RouteInfoManager {
             }
         }
 
-        if (null == brokerAddrFound) {
+        if (null == brokerAddrFound) {//关闭的broker地址
             brokerAddrFound = remoteAddr;
         } else {
             log.info("the broker's channel destroyed, {}, clean it's data structure at once", brokerAddrFound);

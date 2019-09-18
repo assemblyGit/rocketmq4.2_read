@@ -388,7 +388,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
             throw new RemotingConnectException(addr);
         }
     }
-    /**如果channel不存在会重新创建*/
+    /**如果channel不存在会重新创建,null为namesrv*/
     private Channel getAndCreateChannel(final String addr) throws InterruptedException {
         if (null == addr)
             return getAndCreateNameserverChannel();

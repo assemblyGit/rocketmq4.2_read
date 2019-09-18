@@ -68,7 +68,7 @@ public class HAService {
     /**更新master的地址*/
     public void updateMasterAddress(final String newAddr) {
         if (this.haClient != null) {
-            this.haClient.updateMasterAddress(newAddr);
+            this.haClient.updateMasterAddress(newAddr);//更新master地址
         }
     }
 
@@ -494,7 +494,7 @@ public class HAService {
         }
 
         private boolean connectMaster() throws ClosedChannelException {
-            if (null == socketChannel) {
+            if (null == socketChannel) {//如果存在连接对象，就不需要重新连接
                 String addr = this.masterAddress.get();
                 if (addr != null) {
 
@@ -546,7 +546,7 @@ public class HAService {
         public void run() {
             log.info(this.getServiceName() + " service started");
 
-            while (!this.isStopped()) {
+            while (!this.isStopped()) {//每次处理都会重新连接
                 try {
                     if (this.connectMaster()) {//连接到master
 
@@ -560,7 +560,7 @@ public class HAService {
                         this.selector.select(1000);
 
                         boolean ok = this.processReadEvent();
-                        if (!ok) {
+                        if (!ok) {//处理不成功，关闭和master的连接重新连接
                             this.closeMaster();
                         }
 

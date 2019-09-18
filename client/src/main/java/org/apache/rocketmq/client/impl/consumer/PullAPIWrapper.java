@@ -56,7 +56,7 @@ public class PullAPIWrapper {
     private final boolean unitMode;
     private ConcurrentMap<MessageQueue, AtomicLong/* brokerId */> pullFromWhichNodeTable =
         new ConcurrentHashMap<MessageQueue, AtomicLong>(32);
-    private volatile boolean connectBrokerByUser = false;
+    private volatile boolean connectBrokerByUser = false;//filtersrv会使用
     private volatile long defaultBrokerId = MixAll.MASTER_ID;
     private Random random = new Random(System.currentTimeMillis());
     private ArrayList<FilterMessageHook> filterMessageHookList = new ArrayList<FilterMessageHook>();
@@ -66,7 +66,7 @@ public class PullAPIWrapper {
         this.consumerGroup = consumerGroup;
         this.unitMode = unitMode;
     }
-
+    /**更新建议节点*/
     public PullResult processPullResult(final MessageQueue mq, final PullResult pullResult,
         final SubscriptionData subscriptionData) {
         PullResultExt pullResultExt = (PullResultExt) pullResult;
@@ -152,7 +152,7 @@ public class PullAPIWrapper {
         FindBrokerResult findBrokerResult =
             this.mQClientFactory.findBrokerAddressInSubscribe(mq.getBrokerName(),
                 this.recalculatePullFromWhichNode(mq), false);
-        if (null == findBrokerResult) {
+        if (null == findBrokerResult) {//如果没有找到broker 对应的地址
             this.mQClientFactory.updateTopicRouteInfoFromNameServer(mq.getTopic());
             findBrokerResult =
                 this.mQClientFactory.findBrokerAddressInSubscribe(mq.getBrokerName(),

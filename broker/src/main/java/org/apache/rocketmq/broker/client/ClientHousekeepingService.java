@@ -26,7 +26,7 @@ import org.apache.rocketmq.common.constant.LoggerName;
 import org.apache.rocketmq.remoting.ChannelEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+/**broker和生产者和消费者之间的连接*/
 public class ClientHousekeepingService implements ChannelEventListener {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
     private final BrokerController brokerController;

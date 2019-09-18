@@ -487,7 +487,7 @@ public abstract class NettyRemotingAbstract {
             }
         }
     }
-
+    /**处理netty 世界，例如关闭连接等*/
     class NettyEventExecutor extends ServiceThread {
         private final LinkedBlockingQueue<NettyEvent> eventQueue = new LinkedBlockingQueue<NettyEvent>();
         private final int maxSize = 10000;
