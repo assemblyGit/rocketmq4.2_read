@@ -244,7 +244,7 @@ public class ScheduleMessageService extends ConfigManager {
             }
         }
 
-        /**
+        /**   <p>返回延迟消息该发送的时间戳</p>
          * @return
          */
         private long correctDeliverTimestamp(final long now, final long deliverTimestamp) {
@@ -258,31 +258,31 @@ public class ScheduleMessageService extends ConfigManager {
 
             return result;
         }
-
+        /**只执行一次*/
         public void executeOnTimeup() {
             ConsumeQueue cq =
                 ScheduleMessageService.this.defaultMessageStore.findConsumeQueue(SCHEDULE_TOPIC,
-                    delayLevel2QueueId(delayLevel));
+                    delayLevel2QueueId(delayLevel));//获取对应可消费的队列
 
             long failScheduleOffset = offset;
 
             if (cq != null) {
-                SelectMappedBufferResult bufferCQ = cq.getIndexBuffer(this.offset);
+                SelectMappedBufferResult bufferCQ = cq.getIndexBuffer(this.offset);//获取给定偏移的可消费块
                 if (bufferCQ != null) {
                     try {
                         long nextOffset = offset;
                         int i = 0;
                         ConsumeQueueExt.CqExtUnit cqExtUnit = new ConsumeQueueExt.CqExtUnit();
-                        for (; i < bufferCQ.getSize(); i += ConsumeQueue.CQ_STORE_UNIT_SIZE) {
-                            long offsetPy = bufferCQ.getByteBuffer().getLong();
-                            int sizePy = bufferCQ.getByteBuffer().getInt();
+                        for (; i < bufferCQ.getSize(); i += ConsumeQueue.CQ_STORE_UNIT_SIZE) {//每次遍历一个可消费块
+                            long offsetPy = bufferCQ.getByteBuffer().getLong();//消息块物理偏移(commitlog)
+                            int sizePy = bufferCQ.getByteBuffer().getInt(); //消息大小
                             long tagsCode = bufferCQ.getByteBuffer().getLong();
 
-                            if (cq.isExtAddr(tagsCode)) {
+                            if (cq.isExtAddr(tagsCode)) {//tag code如果指向extend file
                                 if (cq.getExt(tagsCode, cqExtUnit)) {
-                                    tagsCode = cqExtUnit.getTagsCode();
+                                    tagsCode = cqExtUnit.getTagsCode();//获取真正的tagcode
                                 } else {
-                                    //can't find ext content.So re compute tags code.
+                                    //can't find ext content.So re compute tags code.   重新计算tags code
                                     log.error("[BUG] can't find consume queue extend file content!addr={}, offsetPy={}, sizePy={}",
                                         tagsCode, offsetPy, sizePy);
                                     long msgStoreTime = defaultMessageStore.getCommitLog().pickupStoreTimestamp(offsetPy, sizePy);
@@ -291,20 +291,20 @@ public class ScheduleMessageService extends ConfigManager {
                             }
 
                             long now = System.currentTimeMillis();
-                            long deliverTimestamp = this.correctDeliverTimestamp(now, tagsCode);
+                            long deliverTimestamp = this.correctDeliverTimestamp(now, tagsCode);//计算延迟后的时间戳,tagsCode为需要延迟到的时间
 
-                            nextOffset = offset + (i / ConsumeQueue.CQ_STORE_UNIT_SIZE);
+                            nextOffset = offset + (i / ConsumeQueue.CQ_STORE_UNIT_SIZE);// 下次待消费 可消费偏移
 
                             long countdown = deliverTimestamp - now;
 
-                            if (countdown <= 0) {
+                            if (countdown <= 0) {//已经达到延迟时间
                                 MessageExt msgExt =
                                     ScheduleMessageService.this.defaultMessageStore.lookMessageByOffset(
-                                        offsetPy, sizePy);
+                                        offsetPy, sizePy);//根据物理偏移和消息大小获取Message
 
                                 if (msgExt != null) {
                                     try {
-                                        MessageExtBrokerInner msgInner = this.messageTimeup(msgExt);
+                                        MessageExtBrokerInner msgInner = this.messageTimeup(msgExt);//修正延迟消息为正常的消息
                                         PutMessageResult putMessageResult =
                                             ScheduleMessageService.this.writeMessageStore
                                                 .putMessage(msgInner);
@@ -312,7 +312,7 @@ public class ScheduleMessageService extends ConfigManager {
                                         if (putMessageResult != null
                                             && putMessageResult.getPutMessageStatus() == PutMessageStatus.PUT_OK) {
                                             continue;
-                                        } else {
+                                        } else {//如果遇到写回消息失败的情况
                                             // XXX: warn and notify me
                                             log.error(
                                                 "ScheduleMessageService, a message time up, but reput it failed, topic: {} msgId {}",
@@ -325,7 +325,7 @@ public class ScheduleMessageService extends ConfigManager {
                                             return;
                                         }
                                     } catch (Exception e) {
-                                        /*
+                                        /*  中间异常直接忽略了?因该进行区分处理
                                          * XXX: warn and notify me
 
 
@@ -340,11 +340,11 @@ public class ScheduleMessageService extends ConfigManager {
                             } else {
                                 ScheduleMessageService.this.timer.schedule(
                                     new DeliverDelayedMessageTimerTask(this.delayLevel, nextOffset),
-                                    countdown);
+                                    countdown);// 有消息需要在这个时间执行
                                 ScheduleMessageService.this.updateOffset(this.delayLevel, nextOffset);
                                 return;
                             }
-                        } // end of for
+                        } // end of for  for循环结束
 
                         nextOffset = offset + (i / ConsumeQueue.CQ_STORE_UNIT_SIZE);
                         ScheduleMessageService.this.timer.schedule(new DeliverDelayedMessageTimerTask(
@@ -355,12 +355,12 @@ public class ScheduleMessageService extends ConfigManager {
 
                         bufferCQ.release();
                     }
-                } // end of if (bufferCQ != null)
+                } // end of if (bufferCQ != null)  存在可消费的块
                 else {
 
                     long cqMinOffset = cq.getMinOffsetInQueue();
-                    if (offset < cqMinOffset) {
-                        failScheduleOffset = cqMinOffset;
+                    if (offset < cqMinOffset) {//如果当前偏移小于cqMinOffset,则下次要从cqMinOffset起调度 不更新nextOffset？
+                        failScheduleOffset = cqMinOffset;//但未更新offset table,如果这时候重启需要再来一遍类似逻辑
                         log.error("schedule CQ offset invalid. offset=" + offset + ", cqMinOffset="
                             + cqMinOffset + ", queueId=" + cq.getQueueId());
                     }
@@ -370,7 +370,7 @@ public class ScheduleMessageService extends ConfigManager {
             ScheduleMessageService.this.timer.schedule(new DeliverDelayedMessageTimerTask(this.delayLevel,
                 failScheduleOffset), DELAY_FOR_A_WHILE);
         }
-
+        /**修正延迟消息的属性*/
         private MessageExtBrokerInner messageTimeup(MessageExt msgExt) {
             MessageExtBrokerInner msgInner = new MessageExtBrokerInner();
             msgInner.setBody(msgExt.getBody());

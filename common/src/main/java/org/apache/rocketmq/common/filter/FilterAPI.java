@@ -35,17 +35,17 @@ public class FilterAPI {
 
         return simple;
     }
-
+    /**构建订阅数据类型*/
     public static SubscriptionData buildSubscriptionData(final String consumerGroup, String topic,
         String subString) throws Exception {
         SubscriptionData subscriptionData = new SubscriptionData();
         subscriptionData.setTopic(topic);
         subscriptionData.setSubString(subString);
 
-        if (null == subString || subString.equals(SubscriptionData.SUB_ALL) || subString.length() == 0) {
+        if (null == subString || subString.equals(SubscriptionData.SUB_ALL) || subString.length() == 0) {//如果
             subscriptionData.setSubString(SubscriptionData.SUB_ALL);
         } else {
-            String[] tags = subString.split("\\|\\|");
+            String[] tags = subString.split("\\|\\|");//用||分隔tag列表
             if (tags.length > 0) {
                 for (String tag : tags) {
                     if (tag.length() > 0) {

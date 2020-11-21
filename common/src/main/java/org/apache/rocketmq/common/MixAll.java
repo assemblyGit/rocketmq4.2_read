@@ -77,8 +77,8 @@ public class MixAll {
     public static final String DEFAULT_CHARSET = "UTF-8";
     public static final long MASTER_ID = 0L;
     public static final long CURRENT_JVM_PID = getPID();
-    public static final String RETRY_GROUP_TOPIC_PREFIX = "%RETRY%";
-    public static final String DLQ_GROUP_TOPIC_PREFIX = "%DLQ%";
+    public static final String RETRY_GROUP_TOPIC_PREFIX = "%RETRY%";//%RETRY%${topic},表示重试topic
+    public static final String DLQ_GROUP_TOPIC_PREFIX = "%DLQ%";   //%DLQ%${topic},表示死亡消息
     public static final String REPLY_TOPIC_POSTFIX = "REPLY_TOPIC";
     public static final String SYSTEM_TOPIC_PREFIX = "rmq_sys_";
     public static final String UNIQUE_MSG_QUERY_FLAG = "_UNIQUE_KEY_QUERY";
@@ -86,7 +86,7 @@ public class MixAll {
     public static final String CONSUME_CONTEXT_TYPE = "ConsumeContextType";
     public static final String RMQ_SYS_TRANS_HALF_TOPIC = "RMQ_SYS_TRANS_HALF_TOPIC";
     public static final String RMQ_SYS_TRACE_TOPIC = "RMQ_SYS_TRACE_TOPIC";
-    public static final String RMQ_SYS_TRANS_OP_HALF_TOPIC = "RMQ_SYS_TRANS_OP_HALF_TOPIC";
+    public static final String RMQ_SYS_TRANS_OP_HALF_TOPIC = "RMQ_SYS_TRANS_OP_HALF_TOPIC"; //事务消息 prepare messgae 的topic
     public static final String TRANS_CHECK_MAX_TIME_TOPIC = "TRANS_CHECK_MAX_TIME_TOPIC";
     public static final String CID_SYS_RMQ_TRANS = "CID_RMQ_SYS_TRANS";
     public static final String ACL_CONF_TOOLS_FILE = "/conf/tools.yml";

@@ -68,7 +68,7 @@ public abstract class NettyRemotingAbstract {
      */
     protected final Semaphore semaphoreAsync;
 
-    /**
+    /**    <p>缓存所有请求</p>
      * This map caches all on-going requests.
      */
     protected final ConcurrentMap<Integer /* opaque */, ResponseFuture> responseTable =

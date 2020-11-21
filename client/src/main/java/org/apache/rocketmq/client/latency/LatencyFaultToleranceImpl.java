@@ -30,7 +30,7 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
     private final ThreadLocalIndex whichItemWorst = new ThreadLocalIndex();
 
     @Override
-    public void updateFaultItem(final String name, final long currentLatency, final long notAvailableDuration) {
+    public void updateFaultItem(final String name, final long currentLatency, final long notAvailableDuration) {//设置name 对应的延迟级别和不可用时间
         FaultItem old = this.faultItemTable.get(name);
         if (null == old) {
             final FaultItem faultItem = new FaultItem(name);

@@ -51,13 +51,13 @@ public class AllocateMessageQueueAveragely implements AllocateMessageQueueStrate
             return result;
         }
 
-        int index = cidAll.indexOf(currentCID);
+        int index = cidAll.indexOf(currentCID);//currentCID当前的索引,
         int mod = mqAll.size() % cidAll.size();
         int averageSize =
             mqAll.size() <= cidAll.size() ? 1 : (mod > 0 && index < mod ? mqAll.size() / cidAll.size()
-                + 1 : mqAll.size() / cidAll.size());
-        int startIndex = (mod > 0 && index < mod) ? index * averageSize : index * averageSize + mod;
-        int range = Math.min(averageSize, mqAll.size() - startIndex);
+                + 1 : mqAll.size() / cidAll.size());//mq数量比消费者少 平均1个,index在余数内的可以多分1个
+        int startIndex = (mod > 0 && index < mod) ? index * averageSize : index * averageSize + mod;//前mod index多分1个
+        int range = Math.min(averageSize, mqAll.size() - startIndex);//mqAll.size() - startIndex 剩余只剩下那么多的情况
         for (int i = 0; i < range; i++) {
             result.add(mqAll.get((startIndex + i) % mqAll.size()));
         }

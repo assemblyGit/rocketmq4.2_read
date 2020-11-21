@@ -1261,7 +1261,7 @@ public class CommitLog {
             keyBuilder.append(msgInner.getQueueId());
             String key = keyBuilder.toString();
             Long queueOffset = CommitLog.this.topicQueueTable.get(key);
-            if (null == queueOffset) {
+            if (null == queueOffset) {//queueOffset 从0开始
                 queueOffset = 0L;
                 CommitLog.this.topicQueueTable.put(key, queueOffset);
             }

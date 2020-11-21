@@ -38,7 +38,7 @@ public class ConsumerOffsetManager extends ConfigManager {
     private static final String TOPIC_GROUP_SEPARATOR = "@";
 
     private ConcurrentMap<String/* topic@group */, ConcurrentMap<Integer, Long>> offsetTable =
-        new ConcurrentHashMap<String, ConcurrentMap<Integer, Long>>(512);
+        new ConcurrentHashMap<String, ConcurrentMap<Integer, Long>>(512);/**待消费的最小偏移量*/
 
     private transient BrokerController brokerController;
 
@@ -138,7 +138,7 @@ public class ConsumerOffsetManager extends ConfigManager {
             }
         }
     }
-
+    /**查询待消费的第一个偏移量*/
     public long queryOffset(final String group, final String topic, final int queueId) {
         // topic@group
         String key = topic + TOPIC_GROUP_SEPARATOR + group;

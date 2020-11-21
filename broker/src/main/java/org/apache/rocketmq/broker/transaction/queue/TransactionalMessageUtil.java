@@ -31,7 +31,7 @@ public class TransactionalMessageUtil {
     public static String buildHalfTopic() {
         return MixAll.RMQ_SYS_TRANS_HALF_TOPIC;
     }
-
+    /**系统消费者*/
     public static String buildConsumerGroup() {
         return MixAll.CID_SYS_RMQ_TRANS;
     }

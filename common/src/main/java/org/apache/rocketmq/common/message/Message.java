@@ -113,7 +113,7 @@ public class Message implements Serializable {
     public void setTopic(String topic) {
         this.topic = topic;
     }
-
+    /**tag在*/
     public String getTags() {
         return this.getProperty(MessageConst.PROPERTY_TAGS);
     }

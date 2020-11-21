@@ -21,7 +21,7 @@ public enum ReadOffsetType {
      * From memory
      */
     READ_FROM_MEMORY,
-    /**
+    /**  从存储器读取,对不同的OffsetStore,store概念不同
      * From storage
      */
     READ_FROM_STORE,

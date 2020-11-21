@@ -140,7 +140,7 @@ public class RebalancePushImpl extends RebalanceImpl {
     @Override
     public long computePullFromWhere(MessageQueue mq) {
         long result = -1;
-        final ConsumeFromWhere consumeFromWhere = this.defaultMQPushConsumerImpl.getDefaultMQPushConsumer().getConsumeFromWhere();
+        final ConsumeFromWhere consumeFromWhere = this.defaultMQPushConsumerImpl.getDefaultMQPushConsumer().getConsumeFromWhere();// 计算开始消费的地址
         final OffsetStore offsetStore = this.defaultMQPushConsumerImpl.getOffsetStore();
         switch (consumeFromWhere) {
             case CONSUME_FROM_LAST_OFFSET_AND_FROM_MIN_WHEN_BOOT_FIRST:
@@ -152,7 +152,7 @@ public class RebalancePushImpl extends RebalanceImpl {
                     result = lastOffset;
                 }
                 // First start,no offset
-                else if (-1 == lastOffset) {
+                else if (-1 == lastOffset) {//如果从store不能获取对应mq的偏移,则从broker获取最大偏移
                     if (mq.getTopic().startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) {
                         result = 0L;
                     } else {

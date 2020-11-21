@@ -63,7 +63,7 @@ public class MappedFile extends ReferenceResource {
     private File file;
     private MappedByteBuffer mappedByteBuffer;
     private volatile long storeTimestamp = 0;
-    private boolean firstCreateInQueue = false;
+    private boolean firstCreateInQueue = false;//第一个文件 因为偏移量从1开始,真实数据从0开始,所以需要填充一个无效块,使得真正数据从1开始
 
     public MappedFile() {
     }

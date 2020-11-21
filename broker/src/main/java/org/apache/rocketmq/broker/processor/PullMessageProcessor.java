@@ -404,7 +404,7 @@ public class PullMessageProcessor implements NettyRequestProcessor {
                         response = null;
                     }
                     break;
-                case ResponseCode.PULL_NOT_FOUND:
+                case ResponseCode.PULL_NOT_FOUND:   //未找到消息
 
                     if (brokerAllowSuspend && hasSuspendFlag) {
                         long pollingTimeMills = suspendTimeoutMillisLong;

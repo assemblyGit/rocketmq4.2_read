@@ -161,7 +161,7 @@ public abstract class AbstractSendMessageProcessor implements NettyRequestProces
         }
         return response;
     }
-
+    /**消息检查*/
     protected RemotingCommand msgCheck(final ChannelHandlerContext ctx,
         final SendMessageRequestHeader requestHeader, final RemotingCommand response) {
         if (!PermName.isWriteable(this.brokerController.getBrokerConfig().getBrokerPermission())
@@ -171,7 +171,7 @@ public abstract class AbstractSendMessageProcessor implements NettyRequestProces
                 + "] sending message is forbidden");
             return response;
         }
-        if (!this.brokerController.getTopicConfigManager().isTopicCanSendMessage(requestHeader.getTopic())) {
+        if (!this.brokerController.getTopicConfigManager().isTopicCanSendMessage(requestHeader.getTopic())) {//TBW102不能发送消息
             String errorMsg = "the topic[" + requestHeader.getTopic() + "] is conflict with system reserved words.";
             log.warn(errorMsg);
             response.setCode(ResponseCode.SYSTEM_ERROR);
@@ -181,7 +181,7 @@ public abstract class AbstractSendMessageProcessor implements NettyRequestProces
 
         TopicConfig topicConfig =
             this.brokerController.getTopicConfigManager().selectTopicConfig(requestHeader.getTopic());
-        if (null == topicConfig) {
+        if (null == topicConfig) {//检查topic的config是否存在
             int topicSysFlag = 0;
             if (requestHeader.isUnitMode()) {
                 if (requestHeader.getTopic().startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) {
@@ -194,7 +194,7 @@ public abstract class AbstractSendMessageProcessor implements NettyRequestProces
             log.warn("the topic {} not exist, producer: {}", requestHeader.getTopic(), ctx.channel().remoteAddress());
             topicConfig = this.brokerController.getTopicConfigManager().createTopicInSendMessageMethod(
                 requestHeader.getTopic(),
-                requestHeader.getDefaultTopic(),
+                requestHeader.getDefaultTopic(),   //参考的topic配置
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
                 requestHeader.getDefaultTopicQueueNums(), topicSysFlag);
 

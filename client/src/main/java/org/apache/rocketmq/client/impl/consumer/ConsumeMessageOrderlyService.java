@@ -257,7 +257,7 @@ public class ConsumeMessageOrderlyService implements ConsumeMessageService {
             }
         }, timeMillis, TimeUnit.MILLISECONDS);
     }
-
+    /**处理消费结果*/
     public boolean processConsumeResult(
         final List<MessageExt> msgs,
         final ConsumeOrderlyStatus status,
@@ -417,7 +417,7 @@ public class ConsumeMessageOrderlyService implements ConsumeMessageService {
                 return;
             }
 
-            final Object objLock = messageQueueLock.fetchLockObject(this.messageQueue);
+            final Object objLock = messageQueueLock.fetchLockObject(this.messageQueue);//每个message queue的对应的锁
             synchronized (objLock) {
                 if (MessageModel.BROADCASTING.equals(ConsumeMessageOrderlyService.this.defaultMQPushConsumerImpl.messageModel())
                     || (this.processQueue.isLocked() && !this.processQueue.isLockExpired())) {

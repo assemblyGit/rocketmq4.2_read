@@ -909,7 +909,7 @@ public class BrokerController {
 
 
     }
-
+    /**注册*/
     public synchronized void registerIncrementBrokerData(TopicConfig topicConfig, DataVersion dataVersion) {
         TopicConfig registerTopicConfig = topicConfig;
         if (!PermName.isWriteable(this.getBrokerConfig().getBrokerPermission())

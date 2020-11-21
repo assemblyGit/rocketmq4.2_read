@@ -57,7 +57,7 @@ public abstract class AbstractTransactionalMessageCheckListener {
     public AbstractTransactionalMessageCheckListener(BrokerController brokerController) {
         this.brokerController = brokerController;
     }
-
+    /**发送check消息给client*/
     public void sendCheckMessage(MessageExt msgExt) throws Exception {
         CheckTransactionStateRequestHeader checkTransactionStateRequestHeader = new CheckTransactionStateRequestHeader();
         checkTransactionStateRequestHeader.setCommitLogOffset(msgExt.getCommitLogOffset());
@@ -76,7 +76,7 @@ public abstract class AbstractTransactionalMessageCheckListener {
             LOGGER.warn("Check transaction failed, channel is null. groupId={}", groupId);
         }
     }
-
+    /**解析半消息*/
     public void resolveHalfMsg(final MessageExt msgExt) {
         executorService.execute(new Runnable() {
             @Override
@@ -107,7 +107,7 @@ public abstract class AbstractTransactionalMessageCheckListener {
         this.brokerController = brokerController;
     }
 
-    /**
+    /**    <p>为了无限制的check,会丢弃超过一定次数或者时间的message</p>
      * In order to avoid check back unlimited, we will discard the message that have been checked more than a certain
      * number of times.
      *

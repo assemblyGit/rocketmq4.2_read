@@ -308,7 +308,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                     switch (pullResult.getPullStatus()) {
                         case FOUND:
                             long prevRequestOffset = pullRequest.getNextOffset();
-                            pullRequest.setNextOffset(pullResult.getNextBeginOffset());
+                            pullRequest.setNextOffset(pullResult.getNextBeginOffset());//下次偏移量
                             long pullRT = System.currentTimeMillis() - beginTimestamp;
                             DefaultMQPushConsumerImpl.this.getConsumerStatsManager().incPullRT(pullRequest.getConsumerGroup(),
                                 pullRequest.getMessageQueue().getTopic(), pullRT);
@@ -323,7 +323,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                                     pullRequest.getMessageQueue().getTopic(), pullResult.getMsgFoundList().size());
 
                                 boolean dispatchToConsume = processQueue.putMessage(pullResult.getMsgFoundList());
-                                DefaultMQPushConsumerImpl.this.consumeMessageService.submitConsumeRequest(
+                                DefaultMQPushConsumerImpl.this.consumeMessageService.submitConsumeRequest(//提交被消费的消息
                                     pullResult.getMsgFoundList(),
                                     processQueue,
                                     pullRequest.getMessageQueue(),
@@ -428,7 +428,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
             subExpression != null, // subscription
             classFilter // class filter
         );
-        try {
+        try {//异步拉取
             this.pullAPIWrapper.pullKernelImpl(
                 pullRequest.getMessageQueue(),
                 subExpression,
@@ -645,7 +645,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                 break;
         }
 
-        this.updateTopicSubscribeInfoWhenSubscriptionChanged();
+        this.updateTopicSubscribeInfoWhenSubscriptionChanged();// 会更新每个topic的路由信息
         this.mQClientFactory.checkClientInBroker();
         this.mQClientFactory.sendHeartbeatToAllBrokerWithLock();
         this.mQClientFactory.rebalanceImmediately();
@@ -858,7 +858,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
     public MessageListener getMessageListenerInner() {
         return messageListenerInner;
     }
-
+    /**获取路由信息*/
     private void updateTopicSubscribeInfoWhenSubscriptionChanged() {
         Map<String, SubscriptionData> subTable = this.getSubscriptionInner();
         if (subTable != null) {
@@ -876,7 +876,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
     public void subscribe(String topic, String subExpression) throws MQClientException {
         try {
             SubscriptionData subscriptionData = FilterAPI.buildSubscriptionData(this.defaultMQPushConsumer.getConsumerGroup(),
-                topic, subExpression);
+                topic, subExpression);//根据消费者group,topic,subExpression,构建订阅对象
             this.rebalanceImpl.getSubscriptionInner().put(topic, subscriptionData);
             if (this.mQClientFactory != null) {
                 this.mQClientFactory.sendHeartbeatToAllBrokerWithLock();
@@ -1039,7 +1039,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
     public boolean isSubscribeTopicNeedUpdate(String topic) {
         Map<String, SubscriptionData> subTable = this.getSubscriptionInner();
         if (subTable != null) {
-            if (subTable.containsKey(topic)) {
+            if (subTable.containsKey(topic)) {//如果该消费者订阅了该topic,但是该消费者的负载均衡未包含该topic的订阅路由信息
                 return !this.rebalanceImpl.topicSubscribeInfoTable.containsKey(topic);
             }
         }

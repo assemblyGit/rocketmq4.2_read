@@ -56,11 +56,11 @@ public class ProcessQueue {
     private final AtomicLong tryUnlockTimes = new AtomicLong(0);
     private volatile long queueOffsetMax = 0L;
     private volatile boolean dropped = false;
-    private volatile long lastPullTimestamp = System.currentTimeMillis();
+    private volatile long lastPullTimestamp = System.currentTimeMillis();  //上次拉取时间
     private volatile long lastConsumeTimestamp = System.currentTimeMillis();
     private volatile boolean locked = false;
     private volatile long lastLockTimestamp = System.currentTimeMillis();
-    private volatile boolean consuming = false;
+    private volatile boolean consuming = false;//正在消费消息
     private volatile long msgAccCnt = 0;
 
     public boolean isLockExpired() {

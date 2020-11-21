@@ -275,7 +275,7 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
         topicConfig.setPerm(requestHeader.getPerm());
         topicConfig.setTopicSysFlag(requestHeader.getTopicSysFlag() == null ? 0 : requestHeader.getTopicSysFlag());
 
-        this.brokerController.getTopicConfigManager().updateTopicConfig(topicConfig);
+        this.brokerController.getTopicConfigManager().updateTopicConfig(topicConfig);//设置topic的配置信息
 
         this.brokerController.registerIncrementBrokerData(topicConfig, this.brokerController.getTopicConfigManager().getDataVersion());
 

@@ -41,7 +41,7 @@ public interface MQConsumerInner {
     void doRebalance();
 
     void persistConsumerOffset();
-
+    /**更新topic对应的可消费队列集合*/
     void updateTopicSubscribeInfo(final String topic, final Set<MessageQueue> info);
 
     boolean isSubscribeTopicNeedUpdate(final String topic);

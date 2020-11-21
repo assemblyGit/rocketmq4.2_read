@@ -67,7 +67,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
                                           RemotingCommand request) throws RemotingCommandException {
         SendMessageContext mqtraceContext;
         switch (request.getCode()) {
-            case RequestCode.CONSUMER_SEND_MSG_BACK:
+            case RequestCode.CONSUMER_SEND_MSG_BACK:   //消费失败,发回
                 return this.consumerSendMsgBack(ctx, request);
             default:
                 SendMessageRequestHeader requestHeader = parseRequestHeader(request);
@@ -255,7 +255,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
                                       RemotingCommand request,
                                       MessageExt msg, TopicConfig topicConfig) {
         String newTopic = requestHeader.getTopic();
-        if (null != newTopic && newTopic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) {
+        if (null != newTopic && newTopic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) {//重试topic
             String groupName = newTopic.substring(MixAll.RETRY_GROUP_TOPIC_PREFIX.length());
             SubscriptionGroupConfig subscriptionGroupConfig =
                 this.brokerController.getSubscriptionGroupManager().findSubscriptionGroupConfig(groupName);
@@ -271,7 +271,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
                 maxReconsumeTimes = requestHeader.getMaxReconsumeTimes();
             }
             int reconsumeTimes = requestHeader.getReconsumeTimes() == null ? 0 : requestHeader.getReconsumeTimes();
-            if (reconsumeTimes >= maxReconsumeTimes) {
+            if (reconsumeTimes >= maxReconsumeTimes) {//最大重新消费数量
                 newTopic = MixAll.getDLQTopic(groupName);
                 int queueIdInt = Math.abs(this.random.nextInt() % 99999999) % DLQ_NUMS_PER_GROUP;
                 topicConfig = this.brokerController.getTopicConfigManager().createTopicInSendMessageBackMethod(newTopic,
@@ -311,7 +311,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         log.debug("receive SendMessage request command, {}", request);
 
         final long startTimstamp = this.brokerController.getBrokerConfig().getStartAcceptSendRequestTimeStamp();
-        if (this.brokerController.getMessageStore().now() < startTimstamp) {
+        if (this.brokerController.getMessageStore().now() < startTimstamp) {//broker开始接收消息时间
             response.setCode(ResponseCode.SYSTEM_ERROR);
             response.setRemark(String.format("broker unable to service, until %s", UtilAll.timeMillisToHumanString2(startTimstamp)));
             return response;
@@ -328,7 +328,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         int queueIdInt = requestHeader.getQueueId();
         TopicConfig topicConfig = this.brokerController.getTopicConfigManager().selectTopicConfig(requestHeader.getTopic());
 
-        if (queueIdInt < 0) {
+        if (queueIdInt < 0) {//不指定queueid,broker选择
             queueIdInt = Math.abs(this.random.nextInt() % 99999999) % topicConfig.getWriteQueueNums();
         }
 
@@ -353,7 +353,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         PutMessageResult putMessageResult = null;
         Map<String, String> oriProps = MessageDecoder.string2messageProperties(requestHeader.getProperties());
         String traFlag = oriProps.get(MessageConst.PROPERTY_TRANSACTION_PREPARED);
-        if (traFlag != null && Boolean.parseBoolean(traFlag)) {
+        if (traFlag != null && Boolean.parseBoolean(traFlag)) {//如果是事务消息
             if (this.brokerController.getBrokerConfig().isRejectTransactionMessage()) {
                 response.setCode(ResponseCode.NO_PERMISSION);
                 response.setRemark(
@@ -361,7 +361,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
                         + "] sending transaction message is forbidden");
                 return response;
             }
-            putMessageResult = this.brokerController.getTransactionalMessageService().prepareMessage(msgInner);
+            putMessageResult = this.brokerController.getTransactionalMessageService().prepareMessage(msgInner);//准备事务
         } else {
             putMessageResult = this.brokerController.getMessageStore().putMessage(msgInner);
         }

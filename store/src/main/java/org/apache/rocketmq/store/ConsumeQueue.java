@@ -421,7 +421,7 @@ public class ConsumeQueue {
         log.error("[BUG]consume queue can not write, {} {}", this.topic, this.queueId);
         this.defaultMessageStore.getRunningFlags().makeLogicsQueueError();
     }
-
+    /**offset 消息在Commit log的物理偏移,cqOffset producer 存储消息,在该broker上的每个topic下的每个queue的消息偏移量*/
     private boolean putMessagePositionInfo(final long offset, final int size, final long tagsCode,
         final long cqOffset) {
 
@@ -441,11 +441,11 @@ public class ConsumeQueue {
         MappedFile mappedFile = this.mappedFileQueue.getLastMappedFile(expectLogicOffset);
         if (mappedFile != null) {
 
-            if (mappedFile.isFirstCreateInQueue() && cqOffset != 0 && mappedFile.getWrotePosition() == 0) {
+            if (mappedFile.isFirstCreateInQueue() && cqOffset != 0 && mappedFile.getWrotePosition() == 0) {//如果queueoffset 不是从0开始,且在第一次写入文件
                 this.minLogicOffset = expectLogicOffset;
                 this.mappedFileQueue.setFlushedWhere(expectLogicOffset);
                 this.mappedFileQueue.setCommittedWhere(expectLogicOffset);
-                this.fillPreBlank(mappedFile, expectLogicOffset);
+                this.fillPreBlank(mappedFile, expectLogicOffset);//预填充一块,这样可以直接通过偏移量获取对应的数据
                 log.info("fill pre blank space " + mappedFile.getFileName() + " " + expectLogicOffset + " "
                     + mappedFile.getWrotePosition());
             }
@@ -487,7 +487,7 @@ public class ConsumeQueue {
             mappedFile.appendMessage(byteBuffer.array());
         }
     }
-
+    /**获取可消费队列,给定消息偏移的可消费消息块*/
     public SelectMappedBufferResult getIndexBuffer(final long startIndex) {
         int mappedFileSize = this.mappedFileSize;
         long offset = startIndex * CQ_STORE_UNIT_SIZE;

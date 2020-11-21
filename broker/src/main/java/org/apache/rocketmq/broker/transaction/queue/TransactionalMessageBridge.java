@@ -48,7 +48,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
+/***/
 public class TransactionalMessageBridge {
     private static final InternalLogger LOGGER = InnerLoggerFactory.getLogger(LoggerName.TRANSACTION_LOGGER_NAME);
 
@@ -70,7 +70,7 @@ public class TransactionalMessageBridge {
         }
 
     }
-
+    /**每个消费者组已消费的偏移量*/
     public long fetchConsumeOffset(MessageQueue mq) {
         long offset = brokerController.getConsumerOffsetManager().queryOffset(TransactionalMessageUtil.buildConsumerGroup(),
             mq.getTopic(), mq.getQueueId());
@@ -107,7 +107,7 @@ public class TransactionalMessageBridge {
         SubscriptionData sub = new SubscriptionData(topic, "*");
         return getMessage(group, topic, queueId, offset, nums, sub);
     }
-
+    /**获取对应的以消费消息*/
     public PullResult getOpMessage(int queueId, long offset, int nums) {
         String group = TransactionalMessageUtil.buildConsumerGroup();
         String topic = TransactionalMessageUtil.buildOpTopic();
@@ -194,14 +194,14 @@ public class TransactionalMessageBridge {
     public PutMessageResult putHalfMessage(MessageExtBrokerInner messageInner) {
         return store.putMessage(parseHalfMessageInner(messageInner));
     }
-
+    /**修改topic为*/
     private MessageExtBrokerInner parseHalfMessageInner(MessageExtBrokerInner msgInner) {
         MessageAccessor.putProperty(msgInner, MessageConst.PROPERTY_REAL_TOPIC, msgInner.getTopic());
         MessageAccessor.putProperty(msgInner, MessageConst.PROPERTY_REAL_QUEUE_ID,
             String.valueOf(msgInner.getQueueId()));
         msgInner.setSysFlag(
             MessageSysFlag.resetTransactionValue(msgInner.getSysFlag(), MessageSysFlag.TRANSACTION_NOT_TYPE));
-        msgInner.setTopic(TransactionalMessageUtil.buildHalfTopic());
+        msgInner.setTopic(TransactionalMessageUtil.buildHalfTopic());//事务消息RMQ_SYS_TRANS_HALF_TOPIC topic
         msgInner.setQueueId(0);
         msgInner.setPropertiesString(MessageDecoder.messageProperties2String(msgInner.getProperties()));
         return msgInner;
@@ -220,7 +220,7 @@ public class TransactionalMessageBridge {
         LOGGER.debug("[BUG-TO-FIX] Thread:{} msgID:{}", Thread.currentThread().getName(), messageInner.getMsgId());
         return store.putMessage(messageInner);
     }
-
+    /***/
     public boolean putMessage(MessageExtBrokerInner messageInner) {
         PutMessageResult putMessageResult = store.putMessage(messageInner);
         if (putMessageResult != null
@@ -294,7 +294,7 @@ public class TransactionalMessageBridge {
         return topicConfig;
     }
 
-    /**
+    /**    <p>当transaction msg 被提交或者rollback, 写flag 'd'到 operation queue</p>
      * Use this function while transaction msg is committed or rollback write a flag 'd' to operation queue for the
      * msg's offset
      *
@@ -308,7 +308,7 @@ public class TransactionalMessageBridge {
         writeOp(message, messageQueue);
         return true;
     }
-
+    /***/
     private void writeOp(Message message, MessageQueue mq) {
         MessageQueue opQueue;
         if (opQueueMap.containsKey(mq)) {
@@ -321,7 +321,7 @@ public class TransactionalMessageBridge {
             }
         }
         if (opQueue == null) {
-            opQueue = new MessageQueue(TransactionalMessageUtil.buildOpTopic(), mq.getBrokerName(), mq.getQueueId());
+            opQueue = new MessageQueue(TransactionalMessageUtil.buildOpTopic(), mq.getBrokerName(), mq.getQueueId());//操作事务消息的messagequeue
         }
         putMessage(makeOpMessageInner(message, opQueue));
     }

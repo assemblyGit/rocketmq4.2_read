@@ -21,15 +21,15 @@ import org.apache.rocketmq.client.impl.producer.TopicPublishInfo;
 import org.apache.rocketmq.client.log.ClientLogger;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.common.message.MessageQueue;
-
+/**容错策略*/
 public class MQFaultStrategy {
     private final static InternalLogger log = ClientLogger.getLog();
     private final LatencyFaultTolerance<String> latencyFaultTolerance = new LatencyFaultToleranceImpl();
 
     private boolean sendLatencyFaultEnable = false;
 
-    private long[] latencyMax = {50L, 100L, 550L, 1000L, 2000L, 3000L, 15000L};
-    private long[] notAvailableDuration = {0L, 0L, 30000L, 60000L, 120000L, 180000L, 600000L};
+    private long[] latencyMax = {50L, 100L, 550L, 1000L, 2000L, 3000L, 15000L};//延迟级别
+    private long[] notAvailableDuration = {0L, 0L, 30000L, 60000L, 120000L, 180000L, 600000L};//延迟级别对应的不可用时间
 
     public long[] getNotAvailableDuration() {
         return notAvailableDuration;
@@ -54,9 +54,9 @@ public class MQFaultStrategy {
     public void setSendLatencyFaultEnable(final boolean sendLatencyFaultEnable) {
         this.sendLatencyFaultEnable = sendLatencyFaultEnable;
     }
-
+    /**从topic发布信息中搜寻MessageQueue*/
     public MessageQueue selectOneMessageQueue(final TopicPublishInfo tpInfo, final String lastBrokerName) {
-        if (this.sendLatencyFaultEnable) {
+        if (this.sendLatencyFaultEnable) {//默认为false
             try {
                 int index = tpInfo.getSendWhichQueue().getAndIncrement();
                 for (int i = 0; i < tpInfo.getMessageQueueList().size(); i++) {
@@ -64,17 +64,17 @@ public class MQFaultStrategy {
                     if (pos < 0)
                         pos = 0;
                     MessageQueue mq = tpInfo.getMessageQueueList().get(pos);
-                    if (latencyFaultTolerance.isAvailable(mq.getBrokerName())) {
-                        if (null == lastBrokerName || mq.getBrokerName().equals(lastBrokerName))
+                    if (latencyFaultTolerance.isAvailable(mq.getBrokerName())) {//如果存在可用的mq
+                        if (null == lastBrokerName || mq.getBrokerName().equals(lastBrokerName)) //应该是 !mq.getBrokerName().equals(lastBrokerName)
                             return mq;
                     }
                 }
 
-                final String notBestBroker = latencyFaultTolerance.pickOneAtLeast();
+                final String notBestBroker = latencyFaultTolerance.pickOneAtLeast();//从以前的错误中获取一个可用的
                 int writeQueueNums = tpInfo.getQueueIdByBroker(notBestBroker);
-                if (writeQueueNums > 0) {
+                if (writeQueueNums > 0) {//写队列数量
                     final MessageQueue mq = tpInfo.selectOneMessageQueue();
-                    if (notBestBroker != null) {
+                    if (notBestBroker != null) {//理论上不能直接修改MessageQueue对象的属性,应该拷贝个对象
                         mq.setBrokerName(notBestBroker);
                         mq.setQueueId(tpInfo.getSendWhichQueue().getAndIncrement() % writeQueueNums);
                     }
@@ -91,7 +91,7 @@ public class MQFaultStrategy {
 
         return tpInfo.selectOneMessageQueue(lastBrokerName);
     }
-
+    /**更新错误粜米*/
     public void updateFaultItem(final String brokerName, final long currentLatency, boolean isolation) {
         if (this.sendLatencyFaultEnable) {
             long duration = computeNotAvailableDuration(isolation ? 30000 : currentLatency);

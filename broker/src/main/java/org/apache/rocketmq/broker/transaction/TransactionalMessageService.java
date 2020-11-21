@@ -54,14 +54,14 @@ public interface TransactionalMessageService {
      */
     OperationResult rollbackMessage(EndTransactionRequestHeader requestHeader);
 
-    /**
+    /**    <p>遍历未提交/未回滚的 half message,发送request到producer获取事务状态</p>
      * Traverse uncommitted/unroll back half message and send check back request to producer to obtain transaction
      * status.
      *
      * @param transactionTimeout The minimum time of the transactional message to be checked firstly, one message only
-     * exceed this time interval that can be checked.
+     * exceed this time interval that can be checked.   事务消息超时首次被check的时间
      * @param transactionCheckMax The maximum number of times the message was checked, if exceed this value, this
-     * message will be discarded.
+     * message will be discarded.   事务消息最大被check的次数,超过这个次数该消息会被丢弃
      * @param listener When the message is considered to be checked or discarded, the relative method of this class will
      * be invoked.
      */

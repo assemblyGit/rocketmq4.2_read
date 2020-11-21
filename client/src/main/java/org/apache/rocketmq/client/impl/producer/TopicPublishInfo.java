@@ -22,12 +22,12 @@ import org.apache.rocketmq.client.common.ThreadLocalIndex;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.protocol.route.QueueData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
-
+/**描述produce,发送消息的信息*/
 public class TopicPublishInfo {
     private boolean orderTopic = false;
     private boolean haveTopicRouterInfo = false;
     private List<MessageQueue> messageQueueList = new ArrayList<MessageQueue>();
-    private volatile ThreadLocalIndex sendWhichQueue = new ThreadLocalIndex();
+    private volatile ThreadLocalIndex sendWhichQueue = new ThreadLocalIndex();//selectOneMessageQueue上次选择messageQueueList的索引
     private TopicRouteData topicRouteData;
 
     public boolean isOrderTopic() {
@@ -67,7 +67,7 @@ public class TopicPublishInfo {
     }
 
     public MessageQueue selectOneMessageQueue(final String lastBrokerName) {
-        if (lastBrokerName == null) {
+        if (lastBrokerName == null) {//第一次选择的情况
             return selectOneMessageQueue();
         } else {
             int index = this.sendWhichQueue.getAndIncrement();
@@ -76,11 +76,11 @@ public class TopicPublishInfo {
                 if (pos < 0)
                     pos = 0;
                 MessageQueue mq = this.messageQueueList.get(pos);
-                if (!mq.getBrokerName().equals(lastBrokerName)) {
+                if (!mq.getBrokerName().equals(lastBrokerName)) {//如果broker未被选择,因为可能同一个broker下有多个queue,所以先找到一个新的broker下的MessageQueue
                     return mq;
                 }
             }
-            return selectOneMessageQueue();
+            return selectOneMessageQueue();//通过sendWhichQueue 增长取余选择
         }
     }
 

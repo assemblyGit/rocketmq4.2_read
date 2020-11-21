@@ -47,7 +47,7 @@ public class TopicConfigManager extends ConfigManager {
 
     private final ConcurrentMap<String, TopicConfig> topicConfigTable =
         new ConcurrentHashMap<String, TopicConfig>(1024);
-    private final DataVersion dataVersion = new DataVersion();
+    private final DataVersion dataVersion = new DataVersion();//版本号 CAS
     private final Set<String> systemTopicList = new HashSet<String>();
     private transient BrokerController brokerController;
 
@@ -67,7 +67,7 @@ public class TopicConfigManager extends ConfigManager {
         }
         {
             // MixAll.AUTO_CREATE_TOPIC_KEY_TOPIC
-            if (this.brokerController.getBrokerConfig().isAutoCreateTopicEnable()) {
+            if (this.brokerController.getBrokerConfig().isAutoCreateTopicEnable()) {//如果启用自动创建Topic,会往namesrv注册该topic
                 String topic = MixAll.AUTO_CREATE_TOPIC_KEY_TOPIC;
                 TopicConfig topicConfig = new TopicConfig(topic);
                 this.systemTopicList.add(topic);
@@ -159,28 +159,28 @@ public class TopicConfigManager extends ConfigManager {
     public TopicConfig selectTopicConfig(final String topic) {
         return this.topicConfigTable.get(topic);
     }
-
+    /**在sendMessage过程中创建topic,如果已存在topic,返回已存在的topic*/
     public TopicConfig createTopicInSendMessageMethod(final String topic, final String defaultTopic,
         final String remoteAddress, final int clientDefaultTopicQueueNums, final int topicSysFlag) {
         TopicConfig topicConfig = null;
         boolean createNew = false;
 
         try {
-            if (this.lockTopicConfigTable.tryLock(LOCK_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)) {
+            if (this.lockTopicConfigTable.tryLock(LOCK_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)) {//
                 try {
                     topicConfig = this.topicConfigTable.get(topic);
                     if (topicConfig != null)
                         return topicConfig;
 
                     TopicConfig defaultTopicConfig = this.topicConfigTable.get(defaultTopic);
-                    if (defaultTopicConfig != null) {
-                        if (defaultTopic.equals(MixAll.AUTO_CREATE_TOPIC_KEY_TOPIC)) {
-                            if (!this.brokerController.getBrokerConfig().isAutoCreateTopicEnable()) {
-                                defaultTopicConfig.setPerm(PermName.PERM_READ | PermName.PERM_WRITE);
+                    if (defaultTopicConfig != null) {//如果isAutoCreateTopicEnable为false TBW102这个topic对应的TopicConfig为null
+                        if (defaultTopic.equals(MixAll.AUTO_CREATE_TOPIC_KEY_TOPIC)) {//TBW102
+                            if (!this.brokerController.getBrokerConfig().isAutoCreateTopicEnable()) {//自动创建topic
+                                defaultTopicConfig.setPerm(PermName.PERM_READ | PermName.PERM_WRITE);//broker不支持自动创建topic,设置不能继承的权限
                             }
                         }
 
-                        if (PermName.isInherited(defaultTopicConfig.getPerm())) {
+                        if (PermName.isInherited(defaultTopicConfig.getPerm())) {//默认topic的有继承权限,如果defaultTopicConfig的perm不能中不能被继承
                             topicConfig = new TopicConfig(topic);
 
                             int queueNums =
@@ -194,7 +194,7 @@ public class TopicConfigManager extends ConfigManager {
                             topicConfig.setReadQueueNums(queueNums);
                             topicConfig.setWriteQueueNums(queueNums);
                             int perm = defaultTopicConfig.getPerm();
-                            perm &= ~PermName.PERM_INHERIT;
+                            perm &= ~PermName.PERM_INHERIT;//不能继承
                             topicConfig.setPerm(perm);
                             topicConfig.setTopicSysFlag(topicSysFlag);
                             topicConfig.setTopicFilterType(defaultTopicConfig.getTopicFilterType());
@@ -227,7 +227,7 @@ public class TopicConfigManager extends ConfigManager {
             log.error("createTopicInSendMessageMethod exception", e);
         }
 
-        if (createNew) {
+        if (createNew) {//创建了新的topic向namesrv注册
             this.brokerController.registerBrokerAll(false, true, true);
         }
 
@@ -277,7 +277,7 @@ public class TopicConfigManager extends ConfigManager {
 
         return topicConfig;
     }
-
+    /**half message check超过限制放到该topic*/
     public TopicConfig createTopicOfTranCheckMaxTime(final int clientDefaultTopicQueueNums, final int perm) {
         TopicConfig topicConfig = this.topicConfigTable.get(MixAll.TRANS_CHECK_MAX_TIME_TOPIC);
         if (topicConfig != null)
@@ -369,7 +369,7 @@ public class TopicConfigManager extends ConfigManager {
             log.info("create new topic [{}]", topicConfig);
         }
 
-        this.dataVersion.nextVersion();
+        this.dataVersion.nextVersion();//增长版本号
 
         this.persist();
     }

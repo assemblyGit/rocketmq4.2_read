@@ -259,9 +259,9 @@ public abstract class RebalanceImpl {
                 }
                 break;
             }
-            case CLUSTERING: {
+            case CLUSTERING: {  //如果是集群模式
                 Set<MessageQueue> mqSet = this.topicSubscribeInfoTable.get(topic);
-                List<String> cidAll = this.mQClientFactory.findConsumerIdList(topic, consumerGroup);
+                List<String> cidAll = this.mQClientFactory.findConsumerIdList(topic, consumerGroup);//获取该topic的该消费者组的所有订阅者
                 if (null == mqSet) {
                     if (!topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) {
                         log.warn("doRebalance, {}, but the topic[{}] not exist.", consumerGroup, topic);
@@ -287,7 +287,7 @@ public abstract class RebalanceImpl {
                             this.consumerGroup,
                             this.mQClientFactory.getClientId(),
                             mqAll,
-                            cidAll);
+                            cidAll);//分配给该消费者的去消费的队列数量
                     } catch (Throwable e) {
                         log.error("AllocateMessageQueueStrategy.allocate Exception. allocateMessageQueueStrategyName={}", strategy.getName(),
                             e);
@@ -329,7 +329,7 @@ public abstract class RebalanceImpl {
             }
         }
     }
-
+    /**mqSet 新的可消费queue set*/
     private boolean updateProcessQueueTableInRebalance(final String topic, final Set<MessageQueue> mqSet,
         final boolean isOrder) {
         boolean changed = false;
@@ -341,14 +341,14 @@ public abstract class RebalanceImpl {
             ProcessQueue pq = next.getValue();
 
             if (mq.getTopic().equals(topic)) {
-                if (!mqSet.contains(mq)) {
+                if (!mqSet.contains(mq)) { //不存在新集合中
                     pq.setDropped(true);
                     if (this.removeUnnecessaryMessageQueue(mq, pq)) {
                         it.remove();
                         changed = true;
                         log.info("doRebalance, {}, remove unnecessary mq, {}", consumerGroup, mq);
                     }
-                } else if (pq.isPullExpired()) {
+                } else if (pq.isPullExpired()) {//太久没拉取
                     switch (this.consumeType()) {
                         case CONSUME_ACTIVELY:
                             break;
@@ -370,8 +370,8 @@ public abstract class RebalanceImpl {
 
         List<PullRequest> pullRequestList = new ArrayList<PullRequest>();
         for (MessageQueue mq : mqSet) {
-            if (!this.processQueueTable.containsKey(mq)) {
-                if (isOrder && !this.lock(mq)) {
+            if (!this.processQueueTable.containsKey(mq)) {//如果不存在处理中队列
+                if (isOrder && !this.lock(mq)) {//顺序消费者,锁queue
                     log.warn("doRebalance, {}, add a new mq failed, {}, because lock failed", consumerGroup, mq);
                     continue;
                 }
@@ -412,7 +412,7 @@ public abstract class RebalanceImpl {
     public abstract ConsumeType consumeType();
 
     public abstract void removeDirtyOffset(final MessageQueue mq);
-
+    /**计算从哪开始消费*/
     public abstract long computePullFromWhere(final MessageQueue mq);
 
     public abstract void dispatchPullRequest(final List<PullRequest> pullRequestList);

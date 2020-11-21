@@ -89,7 +89,7 @@ public class MQClientInstance {
     private final static long LOCK_TIMEOUT_MILLIS = 3000;
     private final InternalLogger log = ClientLogger.getLog();
     private final ClientConfig clientConfig;
-    private final int instanceIndex;
+    private final int instanceIndex;//factory对于该instance的Index
     private final String clientId;
     private final long bootTimestamp = System.currentTimeMillis();
     private final ConcurrentMap<String/* group */, MQProducerInner> producerTable = new ConcurrentHashMap<String, MQProducerInner>();
@@ -102,7 +102,7 @@ public class MQClientInstance {
     private final Lock lockNamesrv = new ReentrantLock();
     private final Lock lockHeartbeat = new ReentrantLock();
     private final ConcurrentMap<String/* Broker Name */, HashMap<Long/* brokerId */, String/* address */>> brokerAddrTable =
-        new ConcurrentHashMap<String, HashMap<Long, String>>();
+        new ConcurrentHashMap<String, HashMap<Long, String>>();//把每个topic中broker地址收集起来
     private final ConcurrentMap<String/* Broker Name */, HashMap<String/* address */, Integer>> brokerVersionTable =
         new ConcurrentHashMap<String, HashMap<String, Integer>>();
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
@@ -222,7 +222,7 @@ public class MQClientInstance {
 
         return mqList;
     }
-
+    /**有可能同一个MQClientInstance同时服务于生产者和消费者*/
     public void start() throws MQClientException {
 
         synchronized (this) {
@@ -279,7 +279,7 @@ public class MQClientInstance {
                     log.error("ScheduledTask updateTopicRouteInfoFromNameServer exception", e);
                 }
             }
-        }, 10, this.clientConfig.getPollNameServerInterval(), TimeUnit.MILLISECONDS);
+        }, 10, this.clientConfig.getPollNameServerInterval(), TimeUnit.MILLISECONDS);//定时从namesrv获取topic路由信息
 
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
@@ -528,7 +528,7 @@ public class MQClientInstance {
 
         return false;
     }
-
+    /**发送心跳信息给broker*/
     private void sendHeartbeatToAllBroker() {
         final HeartbeatData heartbeatData = this.prepareHeartbeatData();
         final boolean producerEmpty = heartbeatData.getProducerDataSet().isEmpty();
@@ -603,16 +603,16 @@ public class MQClientInstance {
             }
         }
     }
-
+    /**尝试从nameserver获取路由信息*/
     public boolean updateTopicRouteInfoFromNameServer(final String topic, boolean isDefault,
         DefaultMQProducer defaultMQProducer) {
         try {
             if (this.lockNamesrv.tryLock(LOCK_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)) {
                 try {
                     TopicRouteData topicRouteData;
-                    if (isDefault && defaultMQProducer != null) {
-                        topicRouteData = this.mQClientAPIImpl.getDefaultTopicRouteInfoFromNameServer(defaultMQProducer.getCreateTopicKey(),
-                            1000 * 3);
+                    if (isDefault && defaultMQProducer != null) {//如果获取默认topic,获取默认topic路由信息,如果broker启用自动创建topic,默认topic能够获取到所有broker主从
+                        topicRouteData = this.mQClientAPIImpl.getDefaultTopicRouteInfoFromNameServer(defaultMQProducer.getCreateTopicKey(),//当选择了一个broker发送时,
+                            1000 * 3);// broker发现topic config不存在,AutoCreateTopic为true,会自动创建topic配置信息,会上传到namesrv,以后只能从namesrv获取该topic的路由信息,固定指向一个broker
                         if (topicRouteData != null) {
                             for (QueueData data : topicRouteData.getQueueDatas()) {
                                 int queueNums = Math.min(defaultMQProducer.getDefaultTopicQueueNums(), data.getReadQueueNums());
@@ -623,19 +623,19 @@ public class MQClientInstance {
                     } else {
                         topicRouteData = this.mQClientAPIImpl.getTopicRouteInfoFromNameServer(topic, 1000 * 3);
                     }
-                    if (topicRouteData != null) {
+                    if (topicRouteData != null) {//如果存在topicRouteData,判断本地路由是否发生变更
                         TopicRouteData old = this.topicRouteTable.get(topic);
-                        boolean changed = topicRouteDataIsChange(old, topicRouteData);
+                        boolean changed = topicRouteDataIsChange(old, topicRouteData);//如果路由信息发生变化
                         if (!changed) {
-                            changed = this.isNeedUpdateTopicRouteInfo(topic);
+                            changed = this.isNeedUpdateTopicRouteInfo(topic);//路由信息未发生变化
                         } else {
                             log.info("the topic[{}] route info changed, old[{}] ,new[{}]", topic, old, topicRouteData);
                         }
 
-                        if (changed) {
+                        if (changed) {//如果路由信息发生变更
                             TopicRouteData cloneTopicRouteData = topicRouteData.cloneTopicRouteData();
 
-                            for (BrokerData bd : topicRouteData.getBrokerDatas()) {
+                            for (BrokerData bd : topicRouteData.getBrokerDatas()) {//设置broker地址信息,每个topic的topicroute有返回包含该topic的所有broker地址
                                 this.brokerAddrTable.put(bd.getBrokerName(), bd.getBrokerAddrs());
                             }
 
@@ -672,7 +672,7 @@ public class MQClientInstance {
                     } else {
                         log.warn("updateTopicRouteInfoFromNameServer, getTopicRouteInfoFromNameServer return null, Topic: {}", topic);
                     }
-                } catch (MQClientException e) {
+                } catch (MQClientException e) {//getDefaultTopicRouteInfoFromNameServer当topic不存在会抛出MQClientException
                     if (!topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX) && !topic.equals(MixAll.AUTO_CREATE_TOPIC_KEY_TOPIC)) {
                         log.warn("updateTopicRouteInfoFromNameServer Exception", e);
                     }
@@ -787,7 +787,7 @@ public class MQClientInstance {
                 consumerGroup, topic, fullClassName);
         }
     }
-
+    /**比较是否相等*/
     private boolean topicRouteDataIsChange(TopicRouteData olddata, TopicRouteData nowdata) {
         if (olddata == null || nowdata == null)
             return true;

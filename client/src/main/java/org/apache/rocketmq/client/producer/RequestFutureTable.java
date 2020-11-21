@@ -34,7 +34,7 @@ public class RequestFutureTable {
     public static ConcurrentHashMap<String, RequestResponseFuture> getRequestFutureTable() {
         return requestFutureTable;
     }
-
+    /**扫描过期的请求*/
     public static void scanExpiredRequest() {
         final List<RequestResponseFuture> rfList = new LinkedList<RequestResponseFuture>();
         Iterator<Map.Entry<String, RequestResponseFuture>> it = requestFutureTable.entrySet().iterator();
