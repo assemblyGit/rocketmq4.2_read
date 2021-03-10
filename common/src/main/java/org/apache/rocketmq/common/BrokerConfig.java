@@ -82,7 +82,7 @@ public class BrokerConfig {
     private int filterServerNums = 0;
 
     private boolean longPollingEnable = true;
-
+    /**非longpoll的情况*/
     private long shortPollingTimeMills = 1000;
 
     private boolean notifyConsumerIdsChangedEnable = true;

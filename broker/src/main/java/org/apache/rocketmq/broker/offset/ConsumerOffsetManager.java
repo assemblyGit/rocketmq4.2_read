@@ -138,7 +138,7 @@ public class ConsumerOffsetManager extends ConfigManager {
             }
         }
     }
-
+    /**消费者组 对应 topic 对应queue的偏移量*/
     public long queryOffset(final String group, final String topic, final int queueId) {
         // topic@group
         String key = topic + TOPIC_GROUP_SEPARATOR + group;

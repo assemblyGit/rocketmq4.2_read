@@ -255,7 +255,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
             pq.cleanExpiredMsg(this.defaultMQPushConsumer);
         }
     }
-
+    /**根据消费结果进行处理*/
     public void processConsumeResult(
         final ConsumeConcurrentlyStatus status,
         final ConsumeConcurrentlyContext context,
@@ -414,7 +414,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
                         MessageAccessor.setConsumeStartTimeStamp(msg, String.valueOf(System.currentTimeMillis()));
                     }
                 }
-                status = listener.consumeMessage(Collections.unmodifiableList(msgs), context);
+                status = listener.consumeMessage(Collections.unmodifiableList(msgs), context);//消费消息
             } catch (Throwable e) {
                 log.warn("consumeMessage exception: {} Group: {} Msgs: {} MQ: {}",
                     RemotingHelper.exceptionSimpleDesc(e),
@@ -433,7 +433,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
             } else if (consumeRT >= defaultMQPushConsumer.getConsumeTimeout() * 60 * 1000) {
                 returnType = ConsumeReturnType.TIME_OUT;
             } else if (ConsumeConcurrentlyStatus.RECONSUME_LATER == status) {
-                returnType = ConsumeReturnType.FAILED;
+                returnType = ConsumeReturnType.FAILED;//消费失败
             } else if (ConsumeConcurrentlyStatus.CONSUME_SUCCESS == status) {
                 returnType = ConsumeReturnType.SUCCESS;
             }
@@ -447,7 +447,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
                     ConsumeMessageConcurrentlyService.this.consumerGroup,
                     msgs,
                     messageQueue);
-                status = ConsumeConcurrentlyStatus.RECONSUME_LATER;
+                status = ConsumeConcurrentlyStatus.RECONSUME_LATER;//null默认RECONSUME_LATER
             }
 
             if (ConsumeMessageConcurrentlyService.this.defaultMQPushConsumerImpl.hasHook()) {

@@ -22,7 +22,7 @@ public enum ConsumeConcurrentlyStatus {
      */
     CONSUME_SUCCESS,
     /**
-     * Failure consumption,later try to consume
+     * Failure consumption,later try to consume  当messageListener明确返回,表示ConsumeReturnType#FAILED
      */
     RECONSUME_LATER;
 }
